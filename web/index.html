@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>런메이트</title>
+<meta name="description" content="뛰거나 걸으면 경로와 거리를 기록하고 걷기와 뛰기를 자동으로 나눠 보여 주는 안드로이드 러닝 앱, 런메이트의 웹 화면입니다.">
+<meta name="theme-color" content="#f2f5f7">
+<meta name="color-scheme" content="light">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1>런메이트</h1>
+    <p class="lead">뛰거나 걸으면 경로와 거리를 기록하고, <span class="run-t">뛰기</span>와 <span class="walk-t">걷기</span>를 자동으로 나눠 보여 주는 안드로이드 러닝 앱입니다.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/sby1234-ai/runmate/releases/latest">안드로이드 앱 받기</a>
+      <span class="cta-note">설치 파일과 진짜 파일인지 확인하는 값(SHA-256)이 함께 있습니다.</span>
+    </div>
+  </header>
+
+  <section class="open" aria-labelledby="open-h">
+    <h2 id="open-h">기록 파일로 웹에서 보기</h2>
+    <p class="sub">PC나 아이폰에서는 앱을 설치할 수 없어서, 기록 파일(GPX)을 열어 같은 화면을 봅니다. 런메이트 앱에서 내보낸 파일은 앱이 나눈 걷기·뛰기를 그대로 쓰고, 다른 러닝 앱의 GPX는 앱과 같은 규칙으로 다시 나눕니다.</p>
+    <div class="drop" id="drop">
+      <input type="file" id="file" accept=".gpx,application/gpx+xml,application/xml,text/xml">
+      <label for="file" class="btn ghost">GPX 파일 고르기</label>
+      <button type="button" id="btn-sample" class="btn ghost">예시 기록 보기</button>
+      <p class="drop-note">파일을 이 칸에 끌어다 놓아도 됩니다. 파일은 이 브라우저 안에서만 읽고 어디로도 보내지 않습니다.</p>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+
+  <section class="result" id="result" aria-live="polite" hidden>
+    <p class="rec-name" id="rec-name"></p>
+    <div class="big">
+      <div><span class="num" id="time">0:00</span><span class="unit">시간</span></div>
+      <div><span class="num" id="dist">0.00</span><span class="unit">km</span></div>
+    </div>
+    <div class="trio">
+      <div><span class="k">평균 페이스</span><span class="v" id="pace">--'--"</span></div>
+      <div><span class="k">뛴 거리</span><span class="v run-t" id="run-d">0.00</span></div>
+      <div><span class="k">걸은 거리</span><span class="v walk-t" id="walk-d">0.00</span></div>
+    </div>
+
+    <h3>경로</h3>
+    <div class="route" id="route" role="img" aria-label="기록한 경로. 뛴 구간은 주홍, 걸은 구간은 청록, 멈춘 곳은 회색입니다."></div>
+    <p class="legend"><span class="sw run"></span>뛰기 <span class="sw walk"></span>걷기 <span class="sw still"></span>멈춤</p>
+
+    <h3>시간 흐름</h3>
+    <div class="timeline" id="timeline" role="img" aria-label="시간 순서로 본 걷기·뛰기·멈춤"></div>
+    <p class="tl-axis"><span id="tl-start"></span><span id="tl-end"></span></p>
+
+    <h3>1km 구간 <span class="h-note">(가장 빠른 구간은 주홍)</span></h3>
+    <ol class="splits" id="splits"></ol>
+  </section>
+
+  <section class="how" aria-labelledby="how-h">
+    <h2 id="how-h">앱에서는 이렇게 씁니다</h2>
+    <ol class="steps">
+      <li><b>시작</b>을 누르고 휴대폰을 주머니에 넣습니다. 화면이 꺼져도 기록이 이어집니다.</li>
+      <li>걷다가 뛰면 휴대폰 동작 인식과 GPS 속도로 <b>걷기·뛰기가 자동으로 바뀝니다.</b> 기준은 1km 7분 35초(초속 2.2m)입니다.</li>
+      <li>끝나면 <b>정지를 길게</b> 누릅니다. 기록 보기에서 경로, 1km 구간, 뛴 거리와 걸은 거리를 보고 GPX로 내보낼 수 있습니다.</li>
+    </ol>
+    <p class="privacy">앱에는 인터넷 권한이 없습니다. 기록은 휴대폰 안에만 저장되고 밖으로 나가지 않습니다.</p>
+  </section>
+
+  <footer class="foot">
+    <p>소스와 설치 파일: <a href="https://github.com/sby1234-ai/runmate">github.com/sby1234-ai/runmate</a></p>
+    <p>만든 사람: <a href="https://sby1234-ai.github.io/myprofile/career/">서보엽</a></p>
+  </footer>
+</div>
+<script src="logic.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>
