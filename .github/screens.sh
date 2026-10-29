@@ -119,3 +119,14 @@ PY
 cat shots/time_check.txt
 cat shots/pause_check.txt
 adb shell locksettings clear --old 1111 || true
+
+# ── 자동 업데이트: 가짜로 옛 버전(0.0.1)인 척해서 최신 릴리스를 찾고, 받기·SHA-256 확인 뒤 설치 화면이 뜨는지 ──
+adb shell input keyevent KEYCODE_WAKEUP; adb shell wm dismiss-keyguard || true
+adb shell am force-stop $P
+adb shell run-as $P rm -f files/current_run.json || true
+adb shell appops set $P REQUEST_INSTALL_PACKAGES allow || true
+go --es demo updateAsk; shot 20_update_ask 8
+go --es demo update; sleep 45; shot 21_update_install 0
+adb shell dumpsys activity activities | grep -m2 -E "topResumedActivity|mResumedActivity" > shots/update_state.txt || true
+adb shell run-as $P ls -la cache/updates >> shots/update_state.txt 2>&1 || true
+cat shots/update_state.txt
