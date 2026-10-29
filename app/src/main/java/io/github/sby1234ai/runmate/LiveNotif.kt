@@ -1,5 +1,6 @@
 package io.github.sby1234ai.runmate
 
+import io.github.sby1234ai.runmate.ui.showGlass
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
@@ -87,7 +88,7 @@ object LiveNotif {
                 .setMessage("달리는 중 거리·시간을 상태 표시줄 초록 칩에 보여 주려면 런메이트의 실시간 알림을 켜 주세요.\n\n「켜기」를 누르면 그 스위치가 있는 화면으로 이동합니다.")
                 .setPositiveButton("켜기") { _, _ -> openSettings(a) }
                 .setNegativeButton("다음에", null)
-                .show()
+                .showGlass()
         }
     }
 }

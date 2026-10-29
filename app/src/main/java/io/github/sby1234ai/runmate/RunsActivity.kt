@@ -63,6 +63,7 @@ class RunsActivity : AppCompatActivity() {
         for (r in rows) {
             val s = r.stats
             val row = LayoutInflater.from(this).inflate(R.layout.item_run, list, false)
+            io.github.sby1234ai.runmate.ui.Glass.applyTagged(row)
             row.findViewById<TextView>(R.id.date).text = fmt.format(Date(r.id))
             row.findViewById<TextView>(R.id.dist).text = Format.km(s.distance)
             row.findViewById<TextView>(R.id.meta).text = "${Format.duration(s.moving)}  ·  ${Format.pace(s.paceSecPerKm)}"

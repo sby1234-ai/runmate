@@ -7,7 +7,7 @@
             android:text="설정" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="16dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="16dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swMap"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="지도 보기" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -17,7 +17,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swWeather"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="날씨 배경" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -27,7 +27,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swVoice"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="음성 안내" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -41,7 +41,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swPause"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="자동 일시정지" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -51,7 +51,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swLock"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="잠금 화면에 달리기 화면" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -67,7 +67,7 @@
         <!-- 실시간 알림(상태 표시줄 칩)을 켤 수 있는 휴대폰(안드로이드 16 분기 업데이트 이상)에서 꺼져 있을 때만 보임 -->
         <LinearLayout android:id="@+id/liveCard" android:visibility="gone"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="실시간 알림 (초록 칩)" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView android:id="@+id/liveState" style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="저장 공간" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView android:id="@+id/storage" style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp">
             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swUpdate"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="새 버전 자동 확인" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />

@@ -1,5 +1,6 @@
 package io.github.sby1234ai.runmate
 
+import io.github.sby1234ai.runmate.ui.showGlass
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity() {
     private var currentNight = false
     private var darkTiles = false
     private var running = false
+    /** 이번에 켠 동안 범주(bg_clear 등)별로 고른 사진 — 앱을 다시 켜면 새로 고름 */
+    private val bgPick = mutableMapOf<String, Int>()
+    private var shownBg = 0
 
     private val listener = RunRecorder.Listener { render(it) }
 
@@ -104,6 +108,23 @@ class MainActivity : AppCompatActivity() {
         statusView = findViewById(R.id.status)
         intervalNow = findViewById(R.id.intervalNow)
 
+        // 유리 판(시안 확정): 각진 모서리, 빛 테두리, 판 안에 흐린 배경
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.btnSettings), io.github.sby1234ai.runmate.ui.GlassKind.PANEL, true)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.weatherTip), io.github.sby1234ai.runmate.ui.GlassKind.CHIP, false)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.btnStart), io.github.sby1234ai.runmate.ui.GlassKind.STRONG, true)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.setupCard), io.github.sby1234ai.runmate.ui.GlassKind.PANEL, false)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.statsA), io.github.sby1234ai.runmate.ui.GlassKind.PANEL, false)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.statsB), io.github.sby1234ai.runmate.ui.GlassKind.PANEL, false)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.btnPause), io.github.sby1234ai.runmate.ui.GlassKind.PANEL, true)
+        io.github.sby1234ai.runmate.ui.Glass.apply(findViewById(R.id.btnStop), io.github.sby1234ai.runmate.ui.GlassKind.RUN, true)
+        findViewById<View>(R.id.startIcon).background = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = 8 * resources.displayMetrics.density; setColor(ContextCompat.getColor(this@MainActivity, R.color.walk))
+        }
+        for (id in intArrayOf(R.id.home, R.id.runPanel)) {
+            findViewById<View>(id).setOnScrollChangeListener { _, _, _, _, _ -> io.github.sby1234ai.runmate.ui.Backdrop.invalidateAll() }
+        }
+        // 앱을 켤 때마다 배경 사진을 새로 고름
+        if (savedInstanceState == null) bgPick.clear()
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         findViewById<View>(R.id.btnStart).setOnClickListener { startRecording() }
         findViewById<View>(R.id.btnPause).setOnClickListener {
@@ -131,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                     )
                     .setPositiveButton("닫기") { _, _ -> if (recording) moveTaskToBack(true) else finish() }
                     .setNegativeButton("취소", null)
-                    .show()
+                    .showGlass()
             }
         })
         // 잠금 화면에서 열렸을 때도 바로 잠금 위에 보이도록, 기록 중이면 첫 화면을 그리기 전에 설정
@@ -270,15 +291,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val photoView = findViewById<ImageView>(R.id.bgPhoto)
-        // 같은 날씨라도 날마다 다른 사진: bg_clear_1, bg_clear_2 … 중 오늘 날짜로 하나를 고릅니다
+        // 같은 날씨라도 앱을 켤 때마다 다른 사진: bg_clear_1 … 중 하나를 무작위로, 지난번 사진은 피함
         @Suppress("DiscouragedApi")
-        val ids = (1..6).map { resources.getIdentifier("${base}_$it", "drawable", packageName) }.filter { it != 0 }
-        val day = (System.currentTimeMillis() + java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis())) / 86_400_000L
-        val id = if (ids.isEmpty()) 0 else ids[(day % ids.size).toInt()]
+        val ids = (1..8).map { resources.getIdentifier("${base}_$it", "drawable", packageName) }.filter { it != 0 }
+        val id = if (ids.isEmpty()) 0 else bgPick.getOrPut(base) {
+            val sp = getSharedPreferences("bg", MODE_PRIVATE)
+            val last = sp.getInt(base, 0)
+            val choices = ids.filter { it != last }.ifEmpty { ids }
+            choices.random().also { sp.edit().putInt(base, it).apply() }
+        }
         if (id != 0) {
-            photoView.setImageResource(id); photoView.visibility = View.VISIBLE; sky.photo = true
+            if (shownBg != id) { photoView.setImageResource(id); shownBg = id; io.github.sby1234ai.runmate.ui.Backdrop.set(resources, id, photoView) }
+            photoView.visibility = View.VISIBLE; sky.photo = true
         } else {
             photoView.setImageDrawable(null); photoView.visibility = View.GONE; sky.photo = false
+            shownBg = 0; io.github.sby1234ai.runmate.ui.Backdrop.clear()
         }
     }
 
@@ -288,7 +315,7 @@ class MainActivity : AppCompatActivity() {
         for (i in 0 until grid.childCount) {
             val v = grid.getChildAt(i)
             // 시안: 사진 위에는 항상 어두운 유리 카드에 흰 글자
-            v.setBackgroundResource(R.drawable.bg_tile_dark)
+            io.github.sby1234ai.runmate.ui.Glass.apply(v, io.github.sby1234ai.runmate.ui.GlassKind.PANEL, true)
             v.findViewById<TextView>(R.id.title).setTextColor(0xFFFFFFFF.toInt())
             v.findViewById<TextView>(R.id.sub).setTextColor(0xB3FFFFFF.toInt())
         }
@@ -323,7 +350,7 @@ class MainActivity : AppCompatActivity() {
             val v = LayoutInflater.from(this).inflate(R.layout.item_tile, grid, false)
             // 아이콘: 반투명 색 동그라미 안에 그 색 아이콘
             val c = ContextCompat.getColor(this, t.color)
-            v.findViewById<View>(R.id.iconBg).background.mutate().setTint((c and 0x00FFFFFF) or 0x40000000)
+            v.findViewById<View>(R.id.iconBg).background.mutate().setTint(0x12FFFFFF)
             v.findViewById<ImageView>(R.id.icon).apply {
                 setImageResource(t.icon); imageTintList = ColorStateList.valueOf(c)
             }
@@ -369,7 +396,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             .setNegativeButton("닫기", null)
-            .show()
+            .showGlass()
     }
 
     // ───────── 달리는 중 화면 ─────────
@@ -406,6 +433,7 @@ class MainActivity : AppCompatActivity() {
         home.visibility = if (s.recording) View.GONE else View.VISIBLE
         runPanel.visibility = if (s.recording) View.VISIBLE else View.GONE
         sky.dim = s.recording
+        io.github.sby1234ai.runmate.ui.Backdrop.dim = s.recording
         if (running != s.recording) { running = s.recording; applyBackground(); showOnLockScreen(s.recording && Prefs.lockScreen(this)) }
 
         val autoPaused = s.recording && s.autoPaused

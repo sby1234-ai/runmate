@@ -7,7 +7,7 @@
     android:clickable="true" android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
     <FrameLayout android:id="@+id/iconBg" android:layout_width="36dp" android:layout_height="36dp"
-        android:background="@drawable/bg_circle">
+        android:background="@drawable/bg_icon_sq">
         <ImageView android:id="@+id/icon" android:layout_width="19dp" android:layout_height="19dp"
             android:layout_gravity="center" android:importantForAccessibility="no" />
     </FrameLayout>

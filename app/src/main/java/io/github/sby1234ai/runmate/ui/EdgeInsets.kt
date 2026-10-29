@@ -29,5 +29,7 @@ object EdgeInsets {
             WindowInsetsCompat.CONSUMED
         }
         ViewCompat.requestApplyInsets(content)
+        // XML에서 android:tag="glass"로 표시한 카드를 유리 판으로
+        Glass.applyTagged(content)
     }
 }

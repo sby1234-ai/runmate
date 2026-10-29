@@ -27,45 +27,33 @@
                     android:contentDescription="설정" />
             </LinearLayout>
 
+            <!-- 날씨: 판 없이 배경 위에 글자만(그림자로 읽히게) -->
             <TextView android:id="@+id/greeting" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginTop="22dp" android:textSize="16sp" android:textColor="#E6FFFFFF" />
+                android:layout_marginTop="22dp" android:textSize="16sp" android:textColor="#E6FFFFFF"
+                android:shadowColor="#73000000" android:shadowRadius="10" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
                 <TextView android:id="@+id/temp" android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="--°" android:textSize="64sp" android:textColor="#FFFFFFFF"
-                    android:fontFamily="sans-serif-light" android:includeFontPadding="false" android:fontFeatureSettings="tnum" />
+                    android:fontFamily="sans-serif-light" android:includeFontPadding="false" android:fontFeatureSettings="tnum"
+                    android:shadowColor="#73000000" android:shadowRadius="14" />
                 <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
                     android:orientation="vertical" android:layout_marginStart="14dp">
                     <TextView android:id="@+id/weatherLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:textSize="20sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+                        android:textSize="20sp" android:textStyle="bold" android:textColor="#FFFFFFFF"
+                        android:shadowColor="#73000000" android:shadowRadius="10" />
                     <TextView android:id="@+id/weatherMeta" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" android:textSize="14sp" android:textColor="#D9FFFFFF" />
+                        android:layout_marginTop="2dp" android:textSize="14sp" android:textColor="#E6FFFFFF"
+                        android:shadowColor="#73000000" android:shadowRadius="10" />
                 </LinearLayout>
             </LinearLayout>
             <TextView android:id="@+id/weatherTip" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_marginTop="12dp" android:background="@drawable/bg_chip_dark"
-                android:paddingHorizontal="14dp" android:paddingVertical="7dp"
+                android:paddingHorizontal="12dp" android:paddingVertical="7dp"
                 android:textSize="14sp" android:textColor="#FFFFFFFF" />
 
-            <!-- 시작 버튼 -->
-            <!-- 시안: 가로로 긴 어두운 유리 버튼 -->
-            <LinearLayout android:id="@+id/btnStart"
-                android:layout_width="match_parent" android:layout_height="68dp"
-                android:layout_marginTop="34dp" android:layout_marginHorizontal="28dp"
-                android:orientation="horizontal" android:gravity="center"
-                android:background="@drawable/bg_pill_glass" android:elevation="8dp"
-                android:clickable="true" android:focusable="true" android:contentDescription="달리기 시작">
-                <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_play"
-                    android:importantForAccessibility="no" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp"
-                    android:text="달리기 시작" android:textSize="21sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
-            </LinearLayout>
-            <TextView android:id="@+id/weekLine" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal" android:layout_marginTop="14dp"
-                android:textSize="14sp" android:textColor="#F2FFFFFF" android:fontFeatureSettings="tnum" />
-
             <GridLayout android:id="@+id/tiles" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="22dp" android:layout_marginHorizontal="-6dp" android:columnCount="2" android:useDefaultMargins="false" />
+                android:layout_marginTop="26dp" android:layout_marginHorizontal="-5dp" android:columnCount="2" android:useDefaultMargins="false" />
 
             <LinearLayout android:id="@+id/setupCard"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -74,15 +62,35 @@
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="기록이 끊기지 않게 하려면" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
                 <TextView android:id="@+id/setupText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp" android:textSize="14sp" android:textColor="@color/sub" />
+                    android:layout_marginTop="6dp" android:textSize="14sp" android:textColor="#D9FFFFFF" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBattery" style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
-                    android:text="배터리 설정 열기  ›" android:textColor="#FFFFFFFF" app:strokeColor="#4DFFFFFF" />
+                    android:text="배터리 설정 열기  ›" android:textColor="#FFFFFFFF" app:strokeColor="#4DFFFFFF" app:cornerRadius="10dp" />
             </LinearLayout>
 
+            <!-- 시작 버튼은 맨 아래(엄지가 닿는 곳) -->
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="24dp" />
+
+            <LinearLayout android:id="@+id/btnStart"
+                android:layout_width="match_parent" android:layout_height="68dp"
+                android:orientation="horizontal" android:gravity="center"
+                android:background="@drawable/bg_pill_glass"
+                android:clickable="true" android:focusable="true" android:contentDescription="달리기 시작">
+                <FrameLayout android:id="@+id/startIcon" android:layout_width="34dp" android:layout_height="34dp">
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center"
+                        android:src="@drawable/ic_play" app:tint="#FF06221F" android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp"
+                    android:text="달리기 시작" android:textSize="21sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+            </LinearLayout>
+            <TextView android:id="@+id/weekLine" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" android:layout_marginTop="10dp"
+                android:textSize="14sp" android:textColor="#E6FFFFFF" android:fontFeatureSettings="tnum"
+                android:shadowColor="#73000000" android:shadowRadius="8" />
+
             <TextView android:id="@+id/credit" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="18dp" android:gravity="center"
+                android:layout_marginTop="12dp" android:gravity="center"
                 android:textSize="11sp" android:textColor="#B3FFFFFF" />
         </LinearLayout>
     </ScrollView>
@@ -128,7 +136,7 @@
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="22dp" android:background="@drawable/bg_glass" android:divider="@drawable/divider_v" android:showDividers="middle"
+                android:id="@+id/statsA" android:orientation="horizontal" android:layout_marginTop="22dp" android:background="@drawable/bg_glass" android:divider="@drawable/divider_v" android:showDividers="middle"
                 android:paddingVertical="14dp" android:paddingHorizontal="8dp">
                 <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
                     android:orientation="vertical" android:gravity="center_horizontal">
@@ -154,7 +162,7 @@
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="8dp" android:background="@drawable/bg_glass"
+                android:id="@+id/statsB" android:orientation="horizontal" android:layout_marginTop="8dp" android:background="@drawable/bg_glass"
                 android:divider="@drawable/divider_v" android:showDividers="middle"
                 android:paddingVertical="12dp" android:paddingHorizontal="8dp">
                 <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"

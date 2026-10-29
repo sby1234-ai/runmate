@@ -1,5 +1,6 @@
 package io.github.sby1234ai.runmate
 
+import io.github.sby1234ai.runmate.ui.showGlass
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -100,7 +101,7 @@ class DetailActivity : AppCompatActivity() {
                 .setMessage("이 기록을 지울까요? 지운 기록은 되살릴 수 없습니다.")
                 .setPositiveButton("지우기") { _, _ -> RunStore.delete(this, r.id); finish() }
                 .setNegativeButton("취소", null)
-                .show()
+                .showGlass()
         }
     }
 
