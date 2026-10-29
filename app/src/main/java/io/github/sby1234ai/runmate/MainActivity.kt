@@ -382,7 +382,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun chooseInterval() {
         val plans = IntervalPlan.PRESETS
-        val names = (listOf("끄기 · 자유롭게 달리기") + plans.map { "${it.name}  (${it.totalSec / 60}분)" }).toTypedArray()
+        // 항목: 윗줄 「이름 · 걸리는 시간」, 아랫줄(작고 옅게) 「뛰기·걷기 구성」 — 한 줄에 다 넣으면 시간만 다음 줄로 떨어져 답답함
+        fun item(title: String, detail: String): CharSequence {
+            val sb = android.text.SpannableStringBuilder(title)
+            if (detail.isNotEmpty()) {
+                val start = sb.length
+                sb.append("\n").append(detail)
+                sb.setSpan(android.text.style.RelativeSizeSpan(0.84f), start, sb.length, 0)
+                sb.setSpan(android.text.style.ForegroundColorSpan(0xB3FFFFFF.toInt()), start, sb.length, 0)
+            }
+            return sb
+        }
+        val names: Array<CharSequence> = (listOf(item("끄기", "자유롭게 달리기")) + plans.map {
+            item("${it.shortName} · ${it.totalSec / 60}분", it.name.substringAfter(" · ", ""))
+        }).toTypedArray()
         val cur = Prefs.interval(this)
         val checked = plans.indexOfFirst { it.id == cur }.let { if (it < 0) 0 else it + 1 }
         MaterialAlertDialogBuilder(this)
