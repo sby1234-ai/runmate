@@ -27,10 +27,10 @@
 | 릴리스 | `app/build.gradle.kts`의 `versionName`을 올려 main에 푸시하면 그 버전 릴리스가 자동 생성(태그 푸시는 막혀 있음). 서명 키는 GitHub Secrets에만 있음 |
 | 웹 화면 | `web/` 폴더가 바뀌면 `.github/workflows/pages.yml`이 GitHub Pages로 배포 |
 
-## 지금 상태 (2026-10-29 20:55)
+## 지금 상태 (2026-10-29 21:45)
 
-- 배포: v0.3.1 (versionCode 4). main에는 0.3.2용 변경이 쌓여 있음(아래), 확인 후 versionCode 5 / 0.3.2로 배포 예정
-- main 변경(0.3.1 이후):
+- 배포: **v0.3.3** (versionCode 6). 0.3.2 = 아래 잠금 화면·시간·걸음·실시간 알림, 0.3.3 = GPS 흔들림 거르기(`logic/Smoother.kt`)·멈춘 구간 거리 제외. 정확도 설명과 다른 앱 비교 방법은 `docs/ACCURACY.md`
+- 0.3.1 이후 들어간 것:
   - 잠금 화면: 달리는 중이면 `MainActivity`가 잠금 위에 보임(`showOnLockScreen`), 알림은 어두운 카드(`res/layout/notif_run_small|big.xml`, 흐르는 Chronometer)
   - 시간: 운동 시간은 모두 `SystemClock.elapsedRealtime` 하나로(`RunRecorder.Snapshot.activeMs/activeNow`), 앱은 초 경계에 맞춰 갱신, 알림 Chronometer와 같은 기준점. 인터벌도 운동 시간 기준(일시정지하면 멈춤)
   - 걸음: 휴대폰 걸음 센서(`logic/Steps.kt` StepTracker, `RecordingService.startSteps`), 케이던스 140 이상이면 뛰기(`MotionClassifier.onCadence`), 기록에 `Run.steps` 저장
@@ -41,9 +41,8 @@
 
 ## 다음 할 일
 
-1. `ci-screens`의 `time_check.txt`(앱·알림 시간 차이 ±1초 이내, 실제 30초=화면 30초)와 `ci-screens36`의 칩 캡처 확인
-2. 문제 없으면 versionCode 5 / versionName 0.3.2로 배포
-3. 사용자 휴대폰 기종·One UI 버전 답 반영(초록 칩 지원 범위)
-4. 다른 앱과 정확도 비교 방법 정리(같은 코스에서 런메이트·삼성 헬스 동시 기록 → 거리·걸음·시간 비교)
+1. 사용자 휴대폰 결과 반영(시간·일시정지·잠금 화면·걸음, `docs/ACCURACY.md` 비교 표)
+2. 사용자 휴대폰 기종·One UI 버전 답 반영(초록 칩: 안드로이드 16 QPR1 이상 실시간 알림에서만, API 36 에뮬레이터에선 안 켜짐 확인)
+3. 단계마다 versionCode·versionName을 올려 배포(사용자 요청)
 5. 포털 중간 점검 2차 제출(0.2~0.3), 1주일 실사용 후 최종 제출(`docs/plan.md`)
 6. (나중에) 포트폴리오 myprofile에 웹 화면 연결 — 사용자가 미룸
