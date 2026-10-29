@@ -21,3 +21,10 @@ adb exec-out screencap -p > shots36/02_shade.png
 adb shell cmd statusbar collapse
 getprop() { adb shell getprop ro.build.version.sdk; }
 getprop > shots36/sdk.txt
+# 실시간 알림 점검: 앱이 판단한 값, 권한 상태
+{
+  echo "== logcat RMLIVE"; adb logcat -d -s RMLIVE:D | tail -20
+  echo "== package permissions"; adb shell dumpsys package $P | grep -iE "promot|targetSdk" || true
+  echo "== appops"; adb shell appops get $P 2>&1 | grep -i promot || true
+  echo "== release"; adb shell getprop ro.build.version.release; adb shell getprop ro.build.version.sdk_full || true
+} > shots36/live_check.txt 2>&1

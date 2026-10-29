@@ -32,9 +32,19 @@ object LiveNotif {
     fun allowed(ctx: Context): Boolean {
         if (!supported()) return false
         return try {
-            NotificationManager::class.java.getMethod("canPostPromotedNotifications")
-                .invoke(ctx.getSystemService(NotificationManager::class.java)) as Boolean
-        } catch (e: Exception) { false }
+            (NotificationManager::class.java.getMethod("canPostPromotedNotifications")
+                .invoke(ctx.getSystemService(NotificationManager::class.java)) as Boolean)
+                .also { if (BuildConfig.DEBUG) android.util.Log.d("RMLIVE", "canPostPromotedNotifications=$it") }
+        } catch (e: Exception) {
+            if (BuildConfig.DEBUG) {
+                android.util.Log.d("RMLIVE", "canPostPromotedNotifications 실패: $e")
+                // 이 휴대폰에 실제로 있는 실시간 알림 관련 함수 이름(점검용)
+                val names = (NotificationManager::class.java.methods + android.app.Notification.Builder::class.java.methods)
+                    .map { it.name }.filter { it.contains("romot", true) || it.contains("Critical", true) }.distinct()
+                android.util.Log.d("RMLIVE", "methods=$names")
+            }
+            false
+        }
     }
 
     /** 실시간 알림 스위치가 있는 설정 화면을 엶. 없으면 앱 알림 설정으로 */
