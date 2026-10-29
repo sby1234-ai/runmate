@@ -37,6 +37,27 @@ class SettingsActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.about).text = "기록 중에는 음성 안내와 자동 일시정지를 바꿀 수 없습니다. 다음 기록부터 적용됩니다.\n\n"
         }
 
+        val swLock = findViewById<MaterialSwitch>(R.id.swLock)
+        swLock.isChecked = Prefs.lockScreen(this)
+        swLock.setOnCheckedChangeListener { _, v -> Prefs.setLockScreen(this, v) }
+        // 안드로이드 14 이상에서 잠금 화면 표시(전체 화면 알림) 권한이 꺼져 있으면 켜는 버튼을 보여 줌
+        val nm = getSystemService(android.app.NotificationManager::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= 34 && !nm.canUseFullScreenIntent()) {
+            findViewById<MaterialButton>(R.id.btnFullScreen).apply {
+                visibility = android.view.View.VISIBLE
+                setOnClickListener {
+                    try {
+                        startActivity(android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                            android.net.Uri.parse("package:$packageName")))
+                    } catch (e: Exception) { Toast.makeText(context, "설정 → 애플리케이션 → 런메이트에서 켜 주세요", Toast.LENGTH_LONG).show() }
+                }
+            }
+        }
+        findViewById<MaterialButton>(R.id.btnDevOptions).setOnClickListener {
+            try { startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
+            catch (e: Exception) { Toast.makeText(this, "개발자 옵션이 아직 켜져 있지 않습니다. 빌드 번호를 7번 눌러 켜 주세요", Toast.LENGTH_LONG).show() }
+        }
+
         findViewById<MaterialButton>(R.id.btnTestVoice).setOnClickListener {
             val v = preview ?: Voice(this).also { preview = it }
             v.say("1킬로미터. 이번 1킬로미터 6분 12초. 운동 시간 6분 40초.")

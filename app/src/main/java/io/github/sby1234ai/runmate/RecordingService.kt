@@ -51,6 +51,8 @@ class RecordingService : Service() {
         private const val ACTION_RESUME = "resume"
         private const val ACTION_RESTORE = "restore"
         private const val RESTORE_NOTIF_ID = 2
+        const val LOCK_NOTIF_ID = 3
+        private const val LOCK_CHANNEL = "lockscreen"
         private const val CHANNEL = "recording"
         private const val NOTIF_ID = 1
         private const val AR_REQUEST = 7
@@ -147,6 +149,7 @@ class RecordingService : Service() {
         }
         acquireWakeLock()
         startSteps()
+        watchScreen()
         if (Prefs.voice(this)) {
             voice = Voice(this)
             coach = Coach(plan, autoPause).also { c ->
@@ -251,6 +254,7 @@ class RecordingService : Service() {
     }
 
     private fun finish() {
+        unwatchScreen()
         releaseWakeLock()
         stopSteps()
         fused.removeLocationUpdates(callback)
@@ -270,6 +274,7 @@ class RecordingService : Service() {
     }
 
     override fun onDestroy() {
+        unwatchScreen()
         releaseWakeLock()
         stopSteps()
         fused.removeLocationUpdates(callback)
@@ -280,10 +285,66 @@ class RecordingService : Service() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nm = getSystemService(NotificationManager::class.java)
             val ch = NotificationChannel(CHANNEL, "러닝 기록 중", NotificationManager.IMPORTANCE_LOW)
             ch.description = "기록하는 동안 거리와 시간을 보여 줍니다"
-            getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
+            ch.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            nm.createNotificationChannel(ch)
+            // 화면이 꺼질 때 잠금 화면 위에 달리기 화면을 띄우는 용도(소리·진동 없음)
+            val lock = NotificationChannel(LOCK_CHANNEL, "잠금 화면 달리기 화면", NotificationManager.IMPORTANCE_HIGH)
+            lock.description = "달리는 중 화면이 꺼지면 잠금 화면에 달리기 화면을 보여 줍니다"
+            lock.setSound(null, null); lock.enableVibration(false)
+            lock.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            nm.createNotificationChannel(lock)
         }
+    }
+
+    // ───── 잠금 화면 위 달리기 화면(삼성 헬스처럼) ─────
+    // 화면이 꺼지는 순간 '전체 화면 알림'으로 달리기 화면을 잠금 위에 올려 둡니다(알람 앱과 같은 방식).
+    // 그래서 다른 앱을 보다가 꺼져도, 다시 켜면 잠금을 풀지 않고 시간·거리·일시정지를 볼 수 있습니다.
+    private var screenReceiverOn = false
+    private val screenReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) {
+            when (i.action) {
+                Intent.ACTION_SCREEN_OFF -> if (RunRecorder.recording) showOverLockScreen()
+                Intent.ACTION_USER_PRESENT -> getSystemService(NotificationManager::class.java).cancel(LOCK_NOTIF_ID)
+            }
+        }
+    }
+
+    private fun watchScreen() {
+        if (screenReceiverOn) return
+        val f = android.content.IntentFilter().apply { addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_USER_PRESENT) }
+        ContextCompat.registerReceiver(this, screenReceiver, f, ContextCompat.RECEIVER_NOT_EXPORTED)
+        screenReceiverOn = true
+    }
+
+    private fun unwatchScreen() {
+        if (!screenReceiverOn) return
+        try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
+        screenReceiverOn = false
+        getSystemService(NotificationManager::class.java).cancel(LOCK_NOTIF_ID)
+    }
+
+    private fun showOverLockScreen() {
+        if (!Prefs.lockScreen(this)) return
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= 34 && !nm.canUseFullScreenIntent()) return
+        val pi = PendingIntent.getActivity(this, 9,
+            Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val n = NotificationCompat.Builder(this, LOCK_CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_run)
+            .setContentTitle("런메이트 달리는 중")
+            .setContentText("잠금 화면에서 기록을 보여 줍니다")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setFullScreenIntent(pi, true)
+            .setSilent(true)
+            .setAutoCancel(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .build()
+        nm.notify(LOCK_NOTIF_ID, n)
     }
 
     private fun buildNotification(text: String): Notification {
@@ -296,6 +357,7 @@ class RecordingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         if (canPromote()) return liveUpdate(text, snap, open, toggle, paused)
         return NotificationCompat.Builder(this, CHANNEL)
+            .addExtras(samsungExtras(snap))
             .setSmallIcon(R.drawable.ic_stat_run)
             .setContentTitle(if (paused) "런메이트 일시정지" else "런메이트 기록 중")
             .setContentText(text)
@@ -319,6 +381,35 @@ class RecordingService : Service() {
     // ───── 안드로이드 16 이상: 「실시간 알림」(상태 표시줄 왼쪽 위에 색 칩으로 거리·시간 표시) ─────
     // 실시간 알림은 직접 꾸민 카드·색 채운 알림을 허용하지 않으므로, 이 경우엔 표준 알림으로 같은 정보를 보여 줍니다.
     // 이 앱은 아직 안드로이드 34 기준으로 빌드하므로 16의 새 함수는 이름으로 찾아 부릅니다(없는 휴대폰에선 건너뜀).
+
+    /**
+     * 삼성 라이브 알림·나우 바(왼쪽 위 초록 칩)용 정보. 삼성이 허용한 앱이거나
+     * 개발자 옵션 「모든 앱의 라이브 알림」을 켠 경우에만 보이고, 그 밖에는 무시됩니다.
+     */
+    private fun samsungExtras(s: RunRecorder.Snapshot): android.os.Bundle {
+        val nowE = android.os.SystemClock.elapsedRealtime()
+        val active = if (s.recording) s.activeMs(nowE) else 0L
+        val lap = io.github.sby1234ai.runmate.logic.Lap.of(s.stats, active)
+        val km = "${Format.km(s.stats.distance)} km"
+        val time = android.text.format.DateUtils.formatElapsedTime(active / 1000)
+        val state = when {
+            s.manualPaused || s.autoPaused -> "일시정지"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.RUN -> "뛰는 중"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.WALK -> "걷는 중"
+            else -> "기록 중"
+        }
+        return android.os.Bundle().apply {
+            putInt("android.ongoingActivityNoti.style", 1)
+            putString("android.ongoingActivityNoti.primaryInfo", "$km · $time")
+            putString("android.ongoingActivityNoti.secondaryInfo", "$state · ${lap.number}km째 ${Format.pace(lap.paceSecPerKm)}")
+            putString("android.ongoingActivityNoti.chipExpandedText", km)
+            putInt("android.ongoingActivityNoti.chipBgColor", 0xFF1FB3A2.toInt())
+            putString("android.ongoingActivityNoti.nowbarPrimaryInfo", km)
+            putString("android.ongoingActivityNoti.nowbarSecondaryInfo", "$time · $state")
+            putInt("android.ongoingActivityNoti.actionType", 1)
+            putInt("android.ongoingActivityNoti.actionPrimarySet", 0)
+        }
+    }
 
     private fun canPromote(): Boolean {
         if (Build.VERSION.SDK_INT < 36) return false
@@ -347,6 +438,7 @@ class RecordingService : Service() {
             s.cadence?.takeIf { it > 0 }?.let { add("분당 ${it}걸음") }
         }.joinToString(" · ")
         val n = NotificationCompat.Builder(this, CHANNEL)
+            .addExtras(samsungExtras(s))
             .setSmallIcon(R.drawable.ic_stat_run)
             .setContentTitle("런메이트 · $state")
             .setContentText(text)

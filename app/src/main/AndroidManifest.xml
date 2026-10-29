@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- 안드로이드 16 「실시간 알림」(상태 표시줄 칩). 설치만으로 허용되는 권한이며, 사용자가 설정에서 끌 수 있습니다 -->
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <!-- 달리는 중 화면이 꺼지면 잠금 화면 위에 달리기 화면을 띄우기(알람 앱과 같은 방식) -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <!-- 지도 그림(OpenStreetMap 지도 조각)을 받아 오는 데만 씁니다. 설정에서 지도를 끄면 인터넷 요청이 생기지 않습니다.
          기록은 인터넷으로 보내는 코드가 없습니다. -->
@@ -35,6 +37,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.RunMate">
+
+        <!-- 삼성 라이브 알림·나우 바(삼성이 허용한 기기·설정에서만 동작, 아니면 무시됨) -->
+        <meta-data android:name="com.samsung.android.support.ongoing_activity" android:value="true" />
 
         <activity
             android:name=".MainActivity"

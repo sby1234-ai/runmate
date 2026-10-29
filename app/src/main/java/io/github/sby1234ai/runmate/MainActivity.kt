@@ -117,7 +117,15 @@ class MainActivity : AppCompatActivity() {
             if (RunRecorder.recording) { RecordingService.stop(this); true } else false
         }
         findViewById<MaterialButton>(R.id.btnBattery).setOnClickListener { requestBatteryExemption() }
+        // 잠금 화면에서 열렸을 때도 바로 잠금 위에 보이도록, 기록 중이면 첫 화면을 그리기 전에 설정
+        if (RunRecorder.recording) showOnLockScreen(true)
         handleDemo(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 잠금 화면 위에 띄우려고 올린 알림은 화면이 보이면 지웁니다
+        getSystemService(android.app.NotificationManager::class.java).cancel(RecordingService.LOCK_NOTIF_ID)
     }
 
     override fun onNewIntent(intent: Intent) {
