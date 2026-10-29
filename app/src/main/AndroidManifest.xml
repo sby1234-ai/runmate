@@ -53,6 +53,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".PrepActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".RunsActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".DetailActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="portrait" />

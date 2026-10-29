@@ -34,6 +34,8 @@ enum class GlassKind(val radiusDp: Float, val fill: Int, val edge: IntArray) {
     RUN(10f, 0x14F2542D, intArrayOf(0xD9FFBEAA.toInt(), 0x40F2542D, 0x73FFBEAA)),
     /** 안내 칩 */
     CHIP(6f, 0x0BFFFFFF, EDGE_WHITE),
+    /** 고른 항목(준비 화면의 운동 카드): 청록 빛 테두리 */
+    SELECTED(10f, 0x141FB3A2, intArrayOf(0xF21FB3A2.toInt(), 0x661FB3A2, 0xB31FB3A2.toInt())),
     /** 대화상자 판 */
     SHEET(14f, 0x6B1E2830, EDGE_WHITE),
     /** 대화상자 「취소」 같은 보조 버튼 */
@@ -270,6 +272,18 @@ object Glass {
         val density = v.resources.displayMetrics.density
         val d = GlassDrawable(v, kind, density)
         val mask = android.graphics.drawable.GradientDrawable().apply { cornerRadius = kind.radiusDp * density; setColor(0xFFFFFFFF.toInt()) }
-        v.background = if (pressable) RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), d, mask) else d
+        v.background = if (pressable) RippleDrawable(ColorStateList.valueOf(0x26FFFFFF), d, mask) else d
+        if (pressable) press(v)
+    }
+
+    /** 모든 버튼·카드 공통 누름 효과: 살짝 작아졌다 돌아옴(옅은 빛은 리플) */
+    fun press(v: View) {
+        val sla = android.animation.StateListAnimator()
+        fun anim(scale: Float, ms: Long) = android.animation.ObjectAnimator.ofPropertyValuesHolder(v,
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, scale),
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, scale)).setDuration(ms)
+        sla.addState(intArrayOf(android.R.attr.state_pressed), anim(0.97f, 90))
+        sla.addState(intArrayOf(), anim(1f, 140))
+        v.stateListAnimator = sla
     }
 }

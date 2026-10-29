@@ -71,6 +71,10 @@ class MainActivity : AppCompatActivity() {
 
     private val listener = RunRecorder.Listener { render(it) }
 
+    private val prep = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        if (r.resultCode == RESULT_OK) startRecording()
+    }
+
     private val askPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val fine = result[Manifest.permission.ACCESS_FINE_LOCATION] == true || hasFine()
         if (!fine) {
@@ -126,7 +130,8 @@ class MainActivity : AppCompatActivity() {
         // 앱을 켤 때마다 배경 사진을 새로 고름
         if (savedInstanceState == null) bgPick.clear()
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        findViewById<View>(R.id.btnStart).setOnClickListener { startRecording() }
+        // 「달리기 시작」 → 준비 화면(운동·음성·자동 일시정지 고르기 → 3·2·1) → 돌아오면 기록 시작
+        findViewById<View>(R.id.btnStart).setOnClickListener { prep.launch(Intent(this, PrepActivity::class.java)) }
         findViewById<View>(R.id.btnPause).setOnClickListener {
             val s = RunRecorder.snapshot()
             // 멈춘 상태(자동 포함)면 다시 시작, 아니면 일시정지
