@@ -288,7 +288,7 @@ class RecordingService : Service() {
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = getSystemService(NotificationManager::class.java)
-            nm.deleteNotificationChannel(OLD_CHANNEL)
+            try { nm.deleteNotificationChannel(OLD_CHANNEL) } catch (_: Exception) {}
             val ch = NotificationChannel(CHANNEL, "러닝 기록 중", NotificationManager.IMPORTANCE_DEFAULT)
             ch.description = "기록하는 동안 거리와 시간을 보여 줍니다(잠금 화면 포함)"
             ch.setSound(null, null); ch.enableVibration(false); ch.setShowBadge(false)
