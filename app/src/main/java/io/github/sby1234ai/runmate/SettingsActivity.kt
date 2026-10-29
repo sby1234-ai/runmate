@@ -80,7 +80,13 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val btn = findViewById<MaterialButton>(R.id.btnLive)
+        btn.visibility = android.view.View.VISIBLE
         findViewById<TextView>(R.id.liveState).text = when {
+            LiveNotif.waitingForUpdate() ->
+                ("이 휴대폰의 안드로이드 16.0에서는 실시간 알림이 아직 다른 앱에 열려 있지 않아, 초록 칩·나우 바(잠금 화면 아래쪽 막대)를 쓸 수 없습니다. " +
+                    "휴대폰 소프트웨어 업데이트로 안드로이드 16 분기 업데이트(SDK 36.1) 이상이 되면 따로 설정하지 않아도 자동으로 나옵니다. " +
+                    "그 전까지는 달리는 중 시간·거리를 알림 카드로 보여 줍니다.")
+                    .also { btn.visibility = android.view.View.GONE }
             !LiveNotif.supported() ->
                 "안드로이드 16 이상에서만 쓸 수 있습니다. 이 휴대폰에서는 달리는 중 시간·거리를 알림 카드로 보여 줍니다."
                     .also { btn.visibility = android.view.View.GONE }

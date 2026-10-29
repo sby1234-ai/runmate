@@ -25,8 +25,20 @@ object LiveNotif {
     private const val KEY_ASKED_DAY = "promote_asked_day"
     private const val KEY_LOCK_NOTICE = "lock_notice_shown"
 
-    /** 이 휴대폰이 실시간 알림을 지원하는지(안드로이드 16 이상) */
-    fun supported(): Boolean = Build.VERSION.SDK_INT >= 36
+    /**
+     * 이 휴대폰이 다른 앱의 실시간 알림을 받아 주는지.
+     * 안드로이드 16.0(SDK 36.0) 정식판은 실시간 알림이 꺼진 채 나왔고 권한 자체가 정의되어 있지 않아
+     * canPostPromotedNotifications가 항상 false입니다(에뮬레이터 36.0으로 확인, 2026-10-29).
+     * 다른 앱에 열린 건 안드로이드 16 분기 업데이트(SDK 36.1)부터 — 36.1에서 생긴 Build.VERSION.SDK_INT_FULL이 있으면 36.1 이상.
+     */
+    fun supported(): Boolean = when {
+        Build.VERSION.SDK_INT < 36 -> false
+        Build.VERSION.SDK_INT > 36 -> true
+        else -> try { Build.VERSION::class.java.getField("SDK_INT_FULL"); true } catch (e: Exception) { false }
+    }
+
+    /** 안드로이드 16.0처럼, 16이지만 아직 다른 앱에 실시간 알림이 열리지 않은 휴대폰 */
+    fun waitingForUpdate(): Boolean = Build.VERSION.SDK_INT == 36 && !supported()
 
     /** 실시간 알림이 켜져 있는지. 지원하지 않는 휴대폰이면 false */
     fun allowed(ctx: Context): Boolean {
