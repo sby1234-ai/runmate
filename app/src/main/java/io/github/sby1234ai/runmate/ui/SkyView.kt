@@ -77,7 +77,7 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
         val key = "$sky$night$photo$width$height"
         if (key != shaderKey) {
             bg.shader = if (photo)
-                LinearGradient(0f, 0f, 0f, h, intArrayOf(0x8C000000.toInt(), 0x26000000, 0x1A000000, 0xA6000000.toInt()), floatArrayOf(0f, 0.32f, 0.55f, 1f), Shader.TileMode.CLAMP)
+                LinearGradient(0f, 0f, 0f, h, intArrayOf(0x99000000.toInt(), 0x4D000000, 0x40000000, 0xB3000000.toInt()), floatArrayOf(0f, 0.32f, 0.55f, 1f), Shader.TileMode.CLAMP)
             else LinearGradient(0f, 0f, 0f, h, colors(), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
             shaderKey = key
         }

@@ -11,7 +11,7 @@
         android:layout_width="match_parent" android:layout_height="match_parent" />
 
     <!-- 대기 화면: 날씨, 시작 버튼, 기능 타일 -->
-    <ScrollView android:id="@+id/home"
+    <ScrollView android:id="@+id/home" android:clipToPadding="false"
         android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="18dp" android:paddingBottom="28dp">
@@ -88,7 +88,7 @@
     </ScrollView>
 
     <!-- 달리는 중 화면 -->
-    <ScrollView android:id="@+id/runPanel" android:visibility="gone"
+    <ScrollView android:id="@+id/runPanel" android:visibility="gone" android:clipToPadding="false"
         android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:gravity="center_horizontal"

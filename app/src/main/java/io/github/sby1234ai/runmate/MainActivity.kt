@@ -19,7 +19,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -75,6 +77,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // 사진이 상태 표시줄·내비게이션 바 뒤까지 깔리게 하고, 글자·버튼은 그 높이만큼 안쪽에 둡니다
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = 0x00000000
+        window.navigationBarColor = 0x00000000
+        for (id in intArrayOf(R.id.home, R.id.runPanel)) {
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(id)) { view, insets ->
+                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.setPadding(0, bars.top, 0, bars.bottom)
+                insets
+            }
+        }
         sky = findViewById(R.id.sky)
         home = findViewById(R.id.home)
         runPanel = findViewById(R.id.runPanel)
@@ -228,9 +241,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             photoView.setImageDrawable(null); photoView.visibility = View.GONE; sky.photo = false
         }
-        val (top, bottom) = if (sky.photo) 0xFF111111.toInt() to 0xFF111111.toInt() else sky.edgeColors()
-        window.statusBarColor = top
-        window.navigationBarColor = bottom
     }
 
     /** 어두운 배경(비·밤·사진)에서는 어두운 반투명 카드에 흰 글자, 밝은 배경에서는 흰 카드에 짙은 글자 */
