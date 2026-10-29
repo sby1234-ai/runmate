@@ -215,8 +215,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val photoView = findViewById<ImageView>(R.id.bgPhoto)
+        // 같은 날씨라도 날마다 다른 사진: bg_clear_1, bg_clear_2 … 중 오늘 날짜로 하나를 고릅니다
         @Suppress("DiscouragedApi")
-        val id = resources.getIdentifier(base, "drawable", packageName)
+        val ids = (1..6).map { resources.getIdentifier("${base}_$it", "drawable", packageName) }.filter { it != 0 }
+        val day = (System.currentTimeMillis() + java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis())) / 86_400_000L
+        val id = if (ids.isEmpty()) 0 else ids[(day % ids.size).toInt()]
         if (id != 0) {
             photoView.setImageResource(id); photoView.visibility = View.VISIBLE; sky.photo = true
         } else {
