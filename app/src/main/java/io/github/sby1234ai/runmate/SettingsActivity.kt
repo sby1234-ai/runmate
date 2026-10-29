@@ -58,10 +58,7 @@ class SettingsActivity : AppCompatActivity() {
         swUpdate.setOnCheckedChangeListener { _, v -> Updater.setEnabled(this, v) }
         findViewById<MaterialButton>(R.id.btnCheckUpdate).setOnClickListener { Updater.check(this, quiet = false) }
 
-        findViewById<MaterialButton>(R.id.btnDevOptions).setOnClickListener {
-            try { startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
-            catch (e: Exception) { Toast.makeText(this, "개발자 옵션이 아직 켜져 있지 않습니다. 빌드 번호를 7번 눌러 켜 주세요", Toast.LENGTH_LONG).show() }
-        }
+        findViewById<MaterialButton>(R.id.btnDevOptions).setOnClickListener { DevOptions.open(this) }
 
         findViewById<MaterialButton>(R.id.btnTestVoice).setOnClickListener {
             val v = preview ?: Voice(this).also { preview = it }
@@ -75,6 +72,13 @@ class SettingsActivity : AppCompatActivity() {
         renderStorage()
         val about = findViewById<TextView>(R.id.about)
         about.append("런메이트 ${BuildConfig.VERSION_NAME}\n지도 데이터 © OpenStreetMap 기여자 (ODbL). 지도 그림은 OpenStreetMap 재단 서버에서 받아 옵니다.\n날씨 정보: Open-Meteo.com (CC BY 4.0)\n소스: github.com/sby1234-ai/runmate")
+    }
+
+    // 개발자 옵션을 켜고 돌아오면 버튼 글자를 바로 바꿈
+    override fun onResume() {
+        super.onResume()
+        findViewById<MaterialButton>(R.id.btnDevOptions).text =
+            if (DevOptions.enabled(this)) "개발자 옵션에서 「모든 앱의 라이브 알림」 켜기" else "빌드 번호로 이동 (개발자 옵션 켜기)"
     }
 
     private fun renderStorage() {

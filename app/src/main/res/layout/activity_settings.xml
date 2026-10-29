@@ -70,7 +70,7 @@
                 android:text="상태 표시줄 초록 칩 (라이브 알림)" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
-                android:text="갤럭시의 나우 바·왼쪽 위 초록 칩은 지금은 삼성 앱과 삼성이 허용한 앱에만 열려 있습니다. One UI 8 이상이면 개발자 옵션의 「모든 앱의 라이브 알림」을 켜면 런메이트도 거리·시간을 칩으로 보여 줍니다(개발자 옵션: 설정 → 휴대전화 정보 → 소프트웨어 정보 → 빌드 번호 7번 누르기)." />
+                android:text="갤럭시의 나우 바(잠금 화면 아래쪽 막대)와 상태 표시줄 왼쪽 위 초록 칩은 지금은 삼성 앱과 삼성이 허용한 앱에만 열려 있습니다. One UI 8 이상이면 개발자 옵션의 「모든 앱의 라이브 알림」을 켜면 런메이트도 달리는 중 거리·시간을 나우 바와 초록 칩에 보여 줍니다.\n\n아래 버튼을 누르면 개발자 옵션이 꺼져 있을 땐 「빌드 번호」로(7번 누르면 켜짐), 켜져 있을 땐 개발자 옵션으로 이동해 해당 항목을 깜빡여 알려 줍니다." />
             <com.google.android.material.button.MaterialButton android:id="@+id/btnDevOptions"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
