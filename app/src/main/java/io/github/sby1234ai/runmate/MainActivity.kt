@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<MaterialButton>(R.id.btnBattery).setOnClickListener { requestBatteryExemption() }
         // 잠금 화면에서 열렸을 때도 바로 잠금 위에 보이도록, 기록 중이면 첫 화면을 그리기 전에 설정
-        if (RunRecorder.recording) showOnLockScreen(true)
+        if (RunRecorder.recording && Prefs.lockScreen(this)) showOnLockScreen(true)
         handleDemo(intent)
     }
 
@@ -385,7 +385,7 @@ class MainActivity : AppCompatActivity() {
         home.visibility = if (s.recording) View.GONE else View.VISIBLE
         runPanel.visibility = if (s.recording) View.VISIBLE else View.GONE
         sky.dim = s.recording
-        if (running != s.recording) { running = s.recording; applyBackground(); showOnLockScreen(s.recording) }
+        if (running != s.recording) { running = s.recording; applyBackground(); showOnLockScreen(s.recording && Prefs.lockScreen(this)) }
 
         val autoPaused = s.recording && s.autoPaused
         val paused = s.recording && s.paused

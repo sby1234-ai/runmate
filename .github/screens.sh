@@ -62,6 +62,7 @@ adb shell dumpsys window | grep -m3 -iE "mDreamingLockscreen|isKeyguardShowing|m
 adb shell input keyevent KEYCODE_HOME; move 2
 adb shell input keyevent KEYCODE_SLEEP; move 4; adb shell input keyevent KEYCODE_WAKEUP; move 3
 shot 18_lock_notification 0
+adb shell dumpsys activity activities | grep -m1 -E "topResumedActivity" > shots/lock_top.txt || true
 adb shell cmd statusbar expand-notifications; move 3
 shot 19_shade 0
 adb shell dumpsys window | grep -m3 -iE "isKeyguardShowing|mShowingLockscreen|KeyguardShowing" >> shots/lock_state.txt || true

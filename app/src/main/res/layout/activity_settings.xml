@@ -57,7 +57,7 @@
                 android:text="잠금 화면에 달리기 화면" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
-                android:text="달리는 중 화면이 꺼지면, 다시 켤 때 잠금을 풀지 않아도 시간·거리·일시정지 화면이 바로 보입니다(삼성 헬스처럼). 갤럭시 잠금 화면 알림을 「아이콘만」으로 해 두셨다면 설정 → 잠금 화면 → 알림에서 「자세히」로 바꾸면 알림 카드도 보입니다." />
+                android:text="기본은 꺼짐: 잠금 화면에는 시간·거리·일시정지가 있는 알림 카드만 보입니다. 켜면 달리는 중 화면을 다시 켤 때 잠금 위에 달리기 화면이 바로 나옵니다(다른 화면으로 가려면 잠금을 풀어야 함). 알림 카드가 안 보이면 갤럭시 설정 → 잠금 화면 → 알림을 「자세히」로 바꿔 주세요." />
             <com.google.android.material.button.MaterialButton android:id="@+id/btnFullScreen"
                 style="@style/Widget.Material3.Button.OutlinedButton" android:visibility="gone"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"

@@ -20,7 +20,8 @@ object Prefs {
     fun setWeather(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("weather", v).apply()
 
     /** 달리는 중 화면이 꺼지면 잠금 화면 위에 달리기 화면을 띄울지 */
-    fun lockScreen(ctx: Context) = p(ctx).getBoolean("lockScreen", true)
+    // 기본은 끔: 잠금 위에 앱 화면이 뜨면 잠금이 풀린 것처럼 보여서, 잠금 화면에는 알림 카드만 보여 줍니다
+    fun lockScreen(ctx: Context) = p(ctx).getBoolean("lockScreen", false)
     fun setLockScreen(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("lockScreen", v).apply()
 
     /** 0이면 인터벌 없음. 나머지는 IntervalPlan.PRESETS의 id. */
