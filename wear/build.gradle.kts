@@ -52,5 +52,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
     // 워치 심박 센서(헬스 서비스)
     implementation("androidx.health:health-services-client:1.0.0-beta03")
+    implementation("com.google.guava:listenablefuture:1.0")
     implementation("androidx.concurrent:concurrent-futures:1.2.0")
 }
