@@ -8,6 +8,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.materialswitch.MaterialSwitch
 import io.github.sby1234ai.runmate.data.Prefs
 import io.github.sby1234ai.runmate.data.RunStore
+import io.github.sby1234ai.runmate.data.WeatherRepo
 import io.github.sby1234ai.runmate.ui.MapPanel
 import java.io.File
 import java.util.Locale
@@ -26,6 +27,9 @@ class SettingsActivity : AppCompatActivity() {
         swVoice.isChecked = Prefs.voice(this)
         swPause.isChecked = Prefs.autoPause(this)
         swMap.setOnCheckedChangeListener { _, v -> Prefs.setMap(this, v) }
+        val swWeather = findViewById<MaterialSwitch>(R.id.swWeather)
+        swWeather.isChecked = Prefs.weather(this)
+        swWeather.setOnCheckedChangeListener { _, v -> Prefs.setWeather(this, v); if (!v) WeatherRepo.clear(this) }
         swVoice.setOnCheckedChangeListener { _, v -> Prefs.setVoice(this, v) }
         swPause.setOnCheckedChangeListener { _, v -> Prefs.setAutoPause(this, v) }
         if (RunRecorder.recording) {
@@ -44,7 +48,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         renderStorage()
         val about = findViewById<TextView>(R.id.about)
-        about.append("런메이트 ${BuildConfig.VERSION_NAME}\n지도 데이터 © OpenStreetMap 기여자 (ODbL). 지도 그림은 OpenStreetMap 재단 서버에서 받아 옵니다.\n소스: github.com/sby1234-ai/runmate")
+        about.append("런메이트 ${BuildConfig.VERSION_NAME}\n지도 데이터 © OpenStreetMap 기여자 (ODbL). 지도 그림은 OpenStreetMap 재단 서버에서 받아 옵니다.\n날씨 정보: Open-Meteo.com (CC BY 4.0)\n소스: github.com/sby1234-ai/runmate")
     }
 
     private fun renderStorage() {

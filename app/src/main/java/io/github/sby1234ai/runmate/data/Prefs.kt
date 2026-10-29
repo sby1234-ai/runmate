@@ -15,6 +15,10 @@ object Prefs {
     fun autoPause(ctx: Context) = p(ctx).getBoolean("autoPause", true)
     fun setAutoPause(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("autoPause", v).apply()
 
+    /** 날씨 배경(대략적인 위치를 날씨 서버에 보냄). */
+    fun weather(ctx: Context) = p(ctx).getBoolean("weather", true)
+    fun setWeather(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("weather", v).apply()
+
     /** 0이면 인터벌 없음. 나머지는 IntervalPlan.PRESETS의 id. */
     fun interval(ctx: Context) = p(ctx).getInt("interval", 0)
     fun setInterval(ctx: Context, id: Int) = p(ctx).edit().putInt("interval", id).apply()

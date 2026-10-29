@@ -49,6 +49,7 @@ object RunRecorder {
     private var pause = PauseTracker()
     private var plan: IntervalPlan? = null
     private var endedAt: Long? = null
+    private var demoMotion: Motion? = null
 
     @Volatile var recording = false; private set
     var startedAt = 0L; private set
@@ -59,7 +60,7 @@ object RunRecorder {
         synchronized(this) {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
-            pause = PauseTracker(); this.plan = plan; endedAt = null
+            pause = PauseTracker(); this.plan = plan; endedAt = null; demoMotion = null
             startedAt = now; recording = true
         }
         notifyListeners()
@@ -106,8 +107,19 @@ object RunRecorder {
     fun markSaved(id: Long) { savedRunId = id; notifyListeners() }
 
     fun snapshot(): Snapshot = synchronized(this) {
-        Snapshot(recording, startedAt, stats, classifier.current, lastAccuracy, usingActivityRecognition, savedRunId,
+        Snapshot(recording, startedAt, stats, demoMotion ?: classifier.current, lastAccuracy, usingActivityRecognition, savedRunId,
             plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt)
+    }
+
+    /** 화면 점검용(디버그 빌드에서만 호출): 서비스 없이 '기록 중' 상태를 만듭니다. */
+    fun demo(pts: List<TrackPoint>, motion: Motion, now: Long) {
+        synchronized(this) {
+            points.clear(); points.addAll(pts); stats = RunStats.of(points)
+            classifier = MotionClassifier(); pause = PauseTracker(); plan = IntervalPlan.byId(1)
+            startedAt = now - (pts.last().time - pts.first().time); endedAt = null; savedRunId = null
+            lastAccuracy = 4f; demoMotion = motion; recording = true
+        }
+        notifyListeners()
     }
 
     /** 지금까지의 점 복사본(지도 그리기용). */

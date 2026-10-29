@@ -13,7 +13,17 @@
                 android:text="지도 보기" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
-                android:text="OpenStreetMap 지도 그림을 인터넷으로 받아 옵니다. 지도 서버는 화면에 띄운 지역의 지도 조각 요청을 받지만, 기록과 위치 기록은 어디로도 보내지 않습니다. 끄면 이 앱은 인터넷을 전혀 쓰지 않고 지나간 길 모양만 그립니다." />
+                android:text="달리기를 마친 뒤 기록 화면에서 지나간 길을 지도 위에 보여 줍니다. 지도 그림은 OpenStreetMap 서버에서 받아 오므로, 그 서버는 기록 화면에 띄운 지역의 지도 조각 요청을 받습니다. 기록 자체는 어디로도 보내지 않습니다. 끄면 지도 없이 길 모양만 그립니다." />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swWeather"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="날씨 배경" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
+                android:text="첫 화면 배경을 지금 날씨(맑음·구름·비·눈·밤)에 맞춰 바꾸고, 기온과 달리기 조언을 보여 줍니다. 이를 위해 대략적인 위치(소수점 첫째 자리, 약 10km 단위)만 Open-Meteo 날씨 서버에 보냅니다. 30분에 한 번까지만 받아 옵니다. 끄면 시간대에 맞춘 기본 배경을 씁니다." />
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"

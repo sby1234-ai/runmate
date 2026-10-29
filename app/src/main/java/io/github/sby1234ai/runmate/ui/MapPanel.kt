@@ -2,6 +2,8 @@ package io.github.sby1234ai.runmate.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
@@ -33,6 +35,7 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
     private var map: MapView? = null
     private var routeView: RouteView? = null
     private val lines = ArrayList<Pair<Polyline, ArrayList<GeoPoint>>>()
+    private val casings = ArrayList<Polyline>()
     private var lastMotion: Motion? = null
     private var rendered = 0
     private var startMarker: Marker? = null
@@ -47,6 +50,17 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
             configure(ctx)
             map = MapView(ctx).also { m ->
                 m.setTileSource(TileSourceFactory.MAPNIK)
+                // 기본 지도는 색이 많아 경로가 묻히므로, 색을 거의 빼고 밝게 눌러 경로만 돋보이게 합니다
+                val cm = ColorMatrix().apply { setSaturation(0.12f) }
+                cm.postConcat(ColorMatrix(floatArrayOf(
+                    0.80f, 0f, 0f, 0f, 46f,
+                    0f, 0.80f, 0f, 0f, 48f,
+                    0f, 0f, 0.82f, 0f, 52f,
+                    0f, 0f, 0f, 1f, 0f,
+                )))
+                m.overlayManager.tilesOverlay.setColorFilter(ColorMatrixColorFilter(cm))
+                m.overlayManager.tilesOverlay.setLoadingBackgroundColor(0xFFEEF1F3.toInt())
+                m.overlayManager.tilesOverlay.setLoadingLineColor(0xFFEEF1F3.toInt())
                 m.setMultiTouchControls(true)
                 m.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 m.isTilesScaledToDpi = true
@@ -90,6 +104,14 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
             val mo = p[i].motion
             if (i == 0) { lastMotion = null; continue }
             if (mo != lastMotion || lines.isEmpty()) {
+                // 흰 테두리 선을 먼저 깔아 경로가 지도 위에서 또렷하게 보이게 합니다
+                val casing = Polyline(m)
+                casing.outlinePaint.apply {
+                    color = 0xFFFFFFFF.toInt()
+                    strokeWidth = (if (mo == Motion.STILL) 6f else 9.5f) * density
+                    strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; isAntiAlias = true
+                }
+                casing.setOnClickListener { _, _, _ -> true }
                 val pl = Polyline(m)
                 pl.outlinePaint.apply {
                     color = ContextCompat.getColor(ctx, colorOf(mo))
@@ -99,11 +121,13 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
                 pl.setOnClickListener { _, _, _ -> true }
                 val list = arrayListOf(GeoPoint(p[i - 1].lat, p[i - 1].lon))
                 lines += pl to list
+                casings += casing
+                m.overlays.add(0, casing)                 // 테두리는 모든 경로선 아래에
                 m.overlays.add(m.overlays.size - 1, pl)   // 저작권 표시는 맨 위에 둡니다
                 lastMotion = mo
             }
             val (pl, list) = lines.last()
-            list.add(gp); pl.setPoints(list)
+            list.add(gp); pl.setPoints(list); casings.last().setPoints(list)
         }
         rendered = p.size
         if (p.isNotEmpty()) {
@@ -146,7 +170,8 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
 
     private fun clearMap(m: MapView) {
         lines.forEach { m.overlays.remove(it.first) }
-        lines.clear(); rendered = 0; lastMotion = null
+        casings.forEach { m.overlays.remove(it) }
+        lines.clear(); casings.clear(); rendered = 0; lastMotion = null
     }
 
     private fun marker(m: MapView, color: Int): Marker {

@@ -12,4 +12,6 @@
     <color name="run_tint">#FDE7E0</color>
     <color name="walk_tint">#DDF2EF</color>
     <color name="still_tint">#E9EDF0</color>
+    <color name="gold">#E0A526</color>
+    <color name="sky">#3D86C6</color>
 </resources>

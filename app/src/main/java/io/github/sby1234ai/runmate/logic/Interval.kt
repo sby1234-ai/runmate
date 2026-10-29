@@ -16,6 +16,7 @@ data class IntervalPlan(
     data class Phase(val kind: Kind, val rep: Int, val remainingSec: Int)
 
     val totalSec: Int get() = warmupSec + reps * (runSec + walkSec)
+    val shortName: String get() = name.substringBefore(" · ")
 
     fun phaseAt(sec: Long): Phase {
         if (sec < warmupSec) return Phase(Kind.WARMUP, 0, (warmupSec - sec).toInt())

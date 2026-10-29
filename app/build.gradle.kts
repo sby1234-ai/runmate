@@ -53,4 +53,5 @@ dependencies {
     // 지도: OpenStreetMap (설정에서 끄면 만들지 않음)
     implementation("org.osmdroid:osmdroid-android:6.1.20")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")   // 단위 테스트에서 진짜 JSON 읽기
 }
