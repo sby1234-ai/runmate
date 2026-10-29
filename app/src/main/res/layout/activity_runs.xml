@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="20dp" android:paddingBottom="28dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="내 기록" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
+        <TextView android:id="@+id/summary" style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+        <LinearLayout android:id="@+id/list" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="16dp" />
+        <TextView android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="40dp" android:gravity="center" android:visibility="gone"
+            android:text="아직 기록이 없습니다.\n첫 화면에서 시작을 눌러 첫 기록을 남겨 보세요."
+            android:textSize="15sp" android:textColor="@color/sub" android:lineSpacingExtra="4dp" />
+    </LinearLayout>
+</ScrollView>

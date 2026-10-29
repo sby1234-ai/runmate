@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg" android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="20dp" android:paddingBottom="28dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:text="@string/app_name" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRuns" style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="기록 보기" android:textSize="16sp" android:textColor="@color/ink" />
+        </LinearLayout>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/Label"
+            android:text="기록은 이 휴대폰에만 저장되고, 인터넷으로 보내지 않습니다." />
+
+        <TextView android:id="@+id/motion"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="28dp" android:background="@drawable/bg_chip"
+            android:paddingHorizontal="16dp" android:paddingVertical="6dp"
+            android:text="대기 중" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/still" />
+
+        <TextView android:id="@+id/time" style="@style/Num"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14dp"
+            android:text="0:00" android:textSize="72sp" android:textStyle="bold" />
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="bottom" android:layout_marginTop="2dp">
+            <TextView android:id="@+id/distance" style="@style/Num"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0.00" android:textSize="48sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="6dp" android:layout_marginBottom="6dp"
+                android:text="km" android:textSize="20sp" android:textColor="@color/sub" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginTop="22dp" android:background="@drawable/bg_card"
+            android:padding="16dp">
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평균 페이스" />
+                <TextView android:id="@+id/pace" style="@style/Num" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:text="--'--&quot;" android:textSize="22sp" android:textStyle="bold" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="뛴 거리" />
+                <TextView android:id="@+id/runDist" style="@style/Num" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:text="0.00" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/run" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="걸은 거리" />
+                <TextView android:id="@+id/walkDist" style="@style/Num" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:text="0.00" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/walk" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView android:id="@+id/status" style="@style/Label"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStart"
+            android:layout_width="160dp" android:layout_height="160dp"
+            android:layout_gravity="center_horizontal" android:layout_marginTop="28dp"
+            android:insetTop="0dp" android:insetBottom="0dp"
+            android:text="시작" android:textSize="26sp" android:textStyle="bold"
+            app:cornerRadius="80dp" app:backgroundTint="@color/ink"
+            xmlns:app="http://schemas.android.com/apk/res-auto" />
+        <TextView android:id="@+id/startHint" style="@style/Label"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" android:layout_marginTop="10dp"
+            android:text="누르면 바로 기록을 시작합니다" />
+
+        <LinearLayout android:id="@+id/setupCard"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="28dp" android:orientation="vertical" android:background="@drawable/bg_card"
+            android:padding="16dp" android:visibility="gone">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="기록이 끊기지 않게 하려면" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView android:id="@+id/setupText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:textSize="14sp" android:textColor="@color/sub" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBattery" style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                android:text="배터리 설정 열기" android:textColor="@color/ink" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
