@@ -441,16 +441,23 @@ class MainActivity : AppCompatActivity() {
      */
     private fun bindToggle(boxId: Int, slashId: Int, textId: Int, name: String, get: () -> Boolean, set: (Boolean) -> Unit) {
         val box = findViewById<View>(boxId); val slash = findViewById<View>(slashId); val text = findViewById<TextView>(textId)
+        val icon = (box as android.view.ViewGroup).getChildAt(0) as ImageView
         fun show(on: Boolean, animate: Boolean) {
-            io.github.sby1234ai.runmate.ui.Glass.apply(box, if (on) io.github.sby1234ai.runmate.ui.GlassKind.ON else io.github.sby1234ai.runmate.ui.GlassKind.PANEL, false)
+            // 켜짐: 밝은 흰 유리 + 청록 아이콘 / 꺼짐: 어두운 유리 + 흰 아이콘·사선. 색 번짐(리플) 없이 움직임만
+            io.github.sby1234ai.runmate.ui.Glass.apply(box, if (on) io.github.sby1234ai.runmate.ui.GlassKind.ON else io.github.sby1234ai.runmate.ui.GlassKind.OFF, false)
             box.stateListAnimator = null
-            box.foreground = android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(0x26FFFFFF), null,
-                android.graphics.drawable.GradientDrawable().apply { cornerRadius = 10 * resources.displayMetrics.density; setColor(-1) })
+            box.foreground = null
+            icon.imageTintList = ColorStateList.valueOf(if (on) 0xFF0E8F82.toInt() else 0xE6FFFFFF.toInt())
             slash.visibility = if (on) View.GONE else View.VISIBLE
-            text.setTextColor(if (on) 0xFFFFFFFF.toInt() else 0x80FFFFFF.toInt())
-            box.alpha = if (on) 1f else 0.75f
+            text.setTextColor(if (on) 0xFFFFFFFF.toInt() else 0x99FFFFFF.toInt())
+            box.alpha = 1f
             val scale = if (on) 1f else 0.94f
-            if (animate) box.animate().scaleX(scale).scaleY(scale).setDuration(180).start() else { box.scaleX = scale; box.scaleY = scale }
+            if (animate) {
+                // 눌렸다 튀어 오르는 움직임
+                box.animate().scaleX(0.86f).scaleY(0.86f).setDuration(80).withEndAction {
+                    box.animate().scaleX(scale).scaleY(scale).setDuration(220).setInterpolator(android.view.animation.OvershootInterpolator(2.2f)).start()
+                }.start()
+            } else { box.scaleX = scale; box.scaleY = scale }
             box.contentDescription = "$name ${if (on) "켜짐" else "꺼짐"}, 눌러서 바꾸기"
         }
         show(get(), false)

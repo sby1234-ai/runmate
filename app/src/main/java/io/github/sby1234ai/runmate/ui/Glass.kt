@@ -36,8 +36,10 @@ enum class GlassKind(val radiusDp: Float, val fill: Int, val edge: IntArray) {
     CHIP(6f, 0x0BFFFFFF, EDGE_WHITE),
     /** 고른 항목(준비 화면의 운동 카드): 청록 빛 테두리 */
     SELECTED(10f, 0x141FB3A2, intArrayOf(0xF21FB3A2.toInt(), 0x661FB3A2, 0xB31FB3A2.toInt())),
-    /** 켜진 토글: 청록으로 채운 칸 */
-    ON(10f, 0x4D1FB3A2, intArrayOf(0xF26FE3D6.toInt(), 0x661FB3A2, 0xB31FB3A2.toInt())),
+    /** 켜진 토글(아이폰 제어 센터 방식): 밝은 흰 유리 칸 — 아이콘만 청록 */
+    ON(10f, 0xE6F4F7F9.toInt(), intArrayOf(0xFFFFFFFF.toInt(), 0xCCFFFFFF.toInt(), 0xFFFFFFFF.toInt())),
+    /** 꺼진 토글: 어두운 유리 칸 */
+    OFF(10f, 0x40000000, EDGE_WHITE),
     /** 대화상자 판 */
     SHEET(14f, 0x6B1E2830, EDGE_WHITE),
     /** 대화상자 「취소」 같은 보조 버튼 */
