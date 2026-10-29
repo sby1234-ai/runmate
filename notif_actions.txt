@@ -1,0 +1,2 @@
+actions=2
+    topResumedActivity=ActivityRecord{177c180 u0 io.github.sby1234ai.runmate/.DetailActivity t19}

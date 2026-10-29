@@ -1,0 +1,5 @@
+    topResumedActivity=ActivityRecord{d7056e4 u0 com.google.android.packageinstaller/com.android.packageinstaller.PackageInstallerActivity t22}
+total 12744
+drwx--S--- 2 u0_a192 u0_a192_cache     4096 2026-10-29 21:43 .
+drwxrws--x 4 u0_a192 u0_a192_cache     4096 2026-10-29 21:43 ..
+-rw------- 1 u0_a192 u0_a192_cache 13028464 2026-10-29 21:43 runmate-0.5.1.apk
