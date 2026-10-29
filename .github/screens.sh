@@ -53,6 +53,7 @@ stay 30;               note "8 30초 멈춰 섬(자동 일시정지)"
 shot 16_autopaused 1
 send resume; stay 8;   note "9 자동 일시정지 중 다시 시작 8초 뒤(서 있어도 시간 흐름)"
 # 잠금 화면: 앱을 켜 둔 채 잠그면 달리는 중 화면이 잠금 위에, 다른 곳에서 잠그면 알림 카드가 보여야 함
+adb shell locksettings set-pin 1111 || true          # 실제 휴대폰처럼 잠금(PIN) 설정
 send resume; move 4
 adb shell am start -n $P/.MainActivity >/dev/null; move 3
 adb shell input keyevent KEYCODE_SLEEP; move 4; adb shell input keyevent KEYCODE_WAKEUP; move 3
@@ -63,6 +64,8 @@ adb shell input keyevent KEYCODE_SLEEP; move 4; adb shell input keyevent KEYCODE
 shot 18_lock_notification 0
 adb shell cmd statusbar expand-notifications; move 3
 shot 19_shade 0
+adb shell dumpsys window | grep -m3 -iE "isKeyguardShowing|mShowingLockscreen|KeyguardShowing" >> shots/lock_state.txt || true
+adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumedActivity" >> shots/lock_state.txt || true
 adb shell cmd statusbar collapse
 # 강제 종료 복구: 달리는 중 앱 프로세스를 죽여도(휴대폰이 강제로 끈 것처럼) 다시 살아나 이어서 기록하는지
 send resume; move 35                                   # 30초마다 중간 저장
@@ -115,3 +118,4 @@ if len(app)>=2:
 PY
 cat shots/time_check.txt
 cat shots/pause_check.txt
+adb shell locksettings clear --old 1111 || true
