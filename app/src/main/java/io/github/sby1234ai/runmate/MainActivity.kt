@@ -464,6 +464,7 @@ class MainActivity : AppCompatActivity() {
             "detail" -> startActivity(Intent(this, DetailActivity::class.java).putExtra(DetailActivity.EXTRA_ID, RunStore.ids(this).first()))
             "runs" -> startActivity(Intent(this, RunsActivity::class.java))
             "settings" -> startActivity(Intent(this, SettingsActivity::class.java))
+            "record" -> RecordingService.start(this)   // 실제 기록 시작(에뮬레이터 위치로 백그라운드 점검)
         }
     }
 }

@@ -25,3 +25,25 @@ go --es demo runs;                 shot 12_runs 5
 go --es demo settings;             shot 13_settings 3
 adb logcat -d -s AndroidRuntime:E > shots/crash.txt || true
 ls -la shots
+
+# ── 백그라운드·잠금 화면에서도 기록이 이어지는지 점검 ──
+adb shell dumpsys deviceidle whitelist +$P >/dev/null 2>&1 || true   # 배터리 최적화 창이 뜨지 않게(점검 전용)
+adb shell am force-stop $P
+LAT=35.85300; LON=128.55800
+adb emu geo fix $LON $LAT
+go --es demo record
+sleep 6
+move() { for k in $(seq 1 "$1"); do LAT=$(python3 -c "print(round($LAT+0.000025,6))"); adb emu geo fix $LON $LAT >/dev/null; sleep 1; done; }
+move 10
+adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_1_foreground.txt
+adb shell input keyevent KEYCODE_HOME
+move 15
+adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_2_home.txt
+adb shell input keyevent KEYCODE_SLEEP
+move 25
+adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_3_locked.txt
+adb shell input keyevent KEYCODE_WAKEUP
+sleep 2
+shot 14_lockscreen 1
+adb shell dumpsys notification --noredact | grep -B2 -A12 "pkg=$P" | head -60 > shots/bg_notification_dump.txt
+cat shots/bg_*.txt
