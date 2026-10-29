@@ -80,9 +80,9 @@ class CoachingTest {
         val c = Coach(plan = p, autoPause = false)
         val s = RunStats.of(emptyList())
         assertEquals(listOf("기록을 시작합니다. 준비 운동으로 3분 걸으세요."), c.update(0, 0, 0, s, Motion.WALK, false))
-        assertTrue(c.update(100_000, 0, 0, s, Motion.WALK, false).isEmpty())
-        assertEquals(listOf("6번 중 1번째 뛰기입니다. 1분 뛰세요."), c.update(180_500, 0, 0, s, Motion.WALK, false))
-        assertEquals(listOf("걸으세요. 2분 동안 숨을 고릅니다."), c.update(241_000, 0, 0, s, Motion.RUN, false))
+        assertTrue(c.update(100_000, 0, 100_000, s, Motion.WALK, false).isEmpty())
+        assertEquals(listOf("6번 중 1번째 뛰기입니다. 1분 뛰세요."), c.update(180_500, 0, 180_500, s, Motion.WALK, false))
+        assertEquals(listOf("걸으세요. 2분 동안 숨을 고릅니다."), c.update(241_000, 0, 241_000, s, Motion.RUN, false))
     }
 
     @Test fun 가장_빠른_1km를_찾는다() {

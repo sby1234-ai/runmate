@@ -144,7 +144,9 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             val s = RunRecorder.snapshot()
             if (s.recording) { renderTime(s); renderInterval(s) }
-            ticker.postDelayed(this, 1000)
+            // 초가 바뀌는 순간에 맞춰 다음 갱신(1초마다 정확히). 알림의 시계와 같은 기준점이라 같은 초를 보여 줍니다
+            val delay = if (s.recording && !s.paused) 1000L - (s.activeNow() % 1000L) + 15L else 1000L
+            ticker.postDelayed(this, delay)
         }
     }
 
@@ -336,15 +338,14 @@ class MainActivity : AppCompatActivity() {
     // ───────── 달리는 중 화면 ─────────
 
     private fun renderTime(s: RunRecorder.Snapshot) {
-        val now = System.currentTimeMillis()
-        timeView.text = Format.duration(s.activeMs(now))
+        timeView.text = android.text.format.DateUtils.formatElapsedTime(s.activeNow() / 1000)
         timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
     }
 
     private fun renderInterval(s: RunRecorder.Snapshot) {
         val plan = s.plan
         if (!s.recording || plan == null) { intervalNow.text = ""; return }
-        val ph = plan.phaseAt((System.currentTimeMillis() - s.startedAt) / 1000)
+        val ph = plan.phaseAt(s.activeNow() / 1000)
         val left = Format.duration(ph.remainingSec * 1000L)
         intervalNow.text = when (ph.kind) {
             IntervalPlan.Kind.WARMUP -> "준비 걷기 · $left"

@@ -26,7 +26,8 @@ class Coach(
         val out = mutableListOf<String>()
 
         if (plan != null) {
-            val ph = plan.phaseAt(((now - startedAt) / 1000).coerceAtLeast(0))
+            // 인터벌도 운동 시간 기준: 일시정지하면 인터벌도 같이 멈춤
+            val ph = plan.phaseAt((activeMs / 1000).coerceAtLeast(0))
             val key = ph.kind to ph.rep
             if (key != lastPhase) {
                 lastPhase = key

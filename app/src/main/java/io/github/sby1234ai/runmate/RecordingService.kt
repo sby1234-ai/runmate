@@ -74,7 +74,7 @@ class RecordingService : Service() {
             val s = RunRecorder.snapshot()
             if (!s.recording) return
             val now = System.currentTimeMillis()
-            val cues = coach?.update(now, s.startedAt, s.activeMs(now), s.stats, s.motion, s.paused) ?: emptyList()
+            val cues = coach?.update(now, s.startedAt, s.activeNow(), s.stats, s.motion, s.paused) ?: emptyList()
             cues.forEach { voice?.say(it) }
             // 5초마다, 그리고 멈춤↔다시 시작이 바뀌는 순간 바로 알림(잠금 화면 카드)을 고칩니다
             if (now - lastNotifAt > 5000 || s.paused != lastPaused) { lastNotifAt = now; lastPaused = s.paused; updateNotification() }
@@ -96,8 +96,8 @@ class RecordingService : Service() {
         when (intent?.action) {
             ACTION_STOP -> finish()
             // 음성 안내("일시정지"/"다시 시작")는 Coach가 상태 변화를 보고 한 번만 말합니다
-            ACTION_PAUSE -> { RunRecorder.setManualPause(true, System.currentTimeMillis()); updateNotification() }
-            ACTION_RESUME -> { RunRecorder.setManualPause(false, System.currentTimeMillis()); updateNotification() }
+            ACTION_PAUSE -> { RunRecorder.setManualPause(true); updateNotification() }
+            ACTION_RESUME -> { RunRecorder.setManualPause(false); updateNotification() }
             else -> begin()
         }
         return START_NOT_STICKY
@@ -240,9 +240,10 @@ class RecordingService : Service() {
     /** 알림 카드 내용. 시간은 Chronometer라 앱이 고치지 않아도 잠금 화면에서 1초마다 흐릅니다(멈춤이면 멈춤). */
     private fun runViews(layout: Int, s: RunRecorder.Snapshot): android.widget.RemoteViews {
         val v = android.widget.RemoteViews(packageName, layout)
-        val now = System.currentTimeMillis()
-        val active = if (s.recording) s.activeMs(now) else 0L
-        val base = android.os.SystemClock.elapsedRealtime() - active
+        // 앱 화면과 똑같은 기준점: 달리는 중이면 base = 시작 시각 + 멈춘 시간 합계(값이 변하지 않음)
+        val nowE = android.os.SystemClock.elapsedRealtime()
+        val active = if (s.recording) s.activeMs(nowE) else 0L
+        val base = nowE - active
         v.setChronometer(R.id.nTime, base, null, s.recording && !s.paused)
         v.setTextViewText(R.id.nDist, if (layout == R.layout.notif_run_small) "${Format.km(s.stats.distance)} km" else Format.km(s.stats.distance))
         val state = when {
@@ -270,7 +271,7 @@ class RecordingService : Service() {
     private fun updateNotification() {
         val s = RunRecorder.snapshot()
         val now = System.currentTimeMillis()
-        val time = s.activeMs(now)
+        val time = s.activeNow()
         val state = when {
             s.manualPaused -> "일시정지"
             s.autoPaused -> "멈춰 있어 자동 일시정지"
