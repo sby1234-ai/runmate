@@ -26,7 +26,30 @@ class RunsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_runs)
         io.github.sby1234ai.runmate.ui.EdgeInsets.apply(this)
+        findViewById<View>(R.id.tabAll).setOnClickListener { selectTab(false) }
+        findViewById<View>(R.id.tabBest).setOnClickListener { selectTab(true) }
+        selectTab(savedInstanceState?.getBoolean("best") ?: intent.getBooleanExtra(EXTRA_BEST, false))
     }
+
+    private var best = false
+
+    override fun onSaveInstanceState(outState: Bundle) { super.onSaveInstanceState(outState); outState.putBoolean("best", best) }
+
+    /** 탭: 고른 쪽은 진한 유리판에 흰 글자, 다른 쪽은 옅은 유리판에 옅은 글자 */
+    private fun selectTab(showBest: Boolean) {
+        best = showBest
+        val kinds = io.github.sby1234ai.runmate.ui.GlassKind.STRONG to io.github.sby1234ai.runmate.ui.GlassKind.PANEL
+        for ((id, on) in listOf(R.id.tabAll to !showBest, R.id.tabBest to showBest)) {
+            val t = findViewById<TextView>(id)
+            io.github.sby1234ai.runmate.ui.Glass.apply(t, if (on) kinds.first else kinds.second, true)
+            t.setTextColor(if (on) 0xFFFFFFFF.toInt() else 0x99FFFFFF.toInt())
+            t.isSelected = on
+        }
+        findViewById<View>(R.id.allPane).visibility = if (showBest) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.prPane).visibility = if (showBest) View.VISIBLE else View.GONE
+    }
+
+    companion object { const val EXTRA_BEST = "best" }
 
     override fun onResume() {
         super.onResume()
@@ -87,6 +110,7 @@ class RunsActivity : AppCompatActivity() {
             items += Triple("가장 긴 거리", "${Format.km(it.stats.distance)} km", it.id)
         }
         findViewById<View>(R.id.prCard).visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.prEmpty).visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
         for ((label, value, id) in items) {
             val line = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; setPadding(0, 12, 0, 12)

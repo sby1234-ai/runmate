@@ -330,18 +330,15 @@ class MainActivity : AppCompatActivity() {
         val grid = findViewById<GridLayout>(R.id.tiles)
         val plan = IntervalPlan.byId(Prefs.interval(this))
         fun onOff(v: Boolean) = if (v) "켜짐" else "꺼짐"
+        // 타일 4개(2×2): 기록(모든 기록·최고 기록은 기록 화면 안의 탭), 인터벌, 음성, 자동 일시정지. 설정은 오른쪽 위 톱니바퀴
         val tiles = listOf(
+            Tile(R.drawable.ic_list, R.color.ink, "기록", "불러오는 중…") { startActivity(Intent(this, RunsActivity::class.java)) },
             Tile(R.drawable.ic_timer, R.color.walk, "인터벌 코칭", plan?.shortName ?: "자유롭게 달리기") { chooseInterval() },
-            Tile(R.drawable.ic_list, R.color.ink, "내 기록", "불러오는 중…") { startActivity(Intent(this, RunsActivity::class.java)) },
-            Tile(R.drawable.ic_trophy, R.color.gold, "최고 기록", "불러오는 중…") { startActivity(Intent(this, RunsActivity::class.java)) },
             Tile(R.drawable.ic_volume, R.color.sky, "음성 안내", onOff(Prefs.voice(this))) {
                 Prefs.setVoice(this, !Prefs.voice(this)); renderHome()
             },
             Tile(R.drawable.ic_pause, R.color.still, "자동 일시정지", onOff(Prefs.autoPause(this))) {
                 Prefs.setAutoPause(this, !Prefs.autoPause(this)); renderHome()
-            },
-            Tile(R.drawable.ic_settings, R.color.sub, "설정", "지도 · 날씨 · 저장 공간") {
-                startActivity(Intent(this, SettingsActivity::class.java))
             },
         )
         grid.removeAllViews()
@@ -372,8 +369,11 @@ class MainActivity : AppCompatActivity() {
             val best1k = runs.mapNotNull { Records.bestEffort(it.points, 1000.0) }.minOrNull()
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
-                views[1].findViewById<TextView>(R.id.sub).text = if (runs.isEmpty()) "아직 없음" else "${runs.size}개 · ${Format.km(sum.all.distance)} km"
-                views[2].findViewById<TextView>(R.id.sub).text = best1k?.let { "1km ${Format.duration(it)}" } ?: "1km를 달려 보세요"
+                views[0].findViewById<TextView>(R.id.sub).text = when {
+                    runs.isEmpty() -> "아직 없음"
+                    best1k != null -> "${runs.size}개 · 최고 1km ${Format.duration(best1k)}"
+                    else -> "${runs.size}개 · ${Format.km(sum.all.distance)} km"
+                }
                 findViewById<TextView>(R.id.weekLine).text =
                     "이번 주 ${Format.km(sum.week.distance)} km · ${sum.week.count}번 달림"
             }

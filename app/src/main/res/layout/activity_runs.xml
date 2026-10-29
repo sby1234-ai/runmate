@@ -4,8 +4,20 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="20dp" android:paddingBottom="28dp">
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="내 기록" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
+            android:text="기록" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
 
+        <!-- 탭: 모든 기록 / 최고 기록 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp"
+            android:orientation="horizontal" android:layout_marginTop="14dp">
+            <TextView android:id="@+id/tabAll" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                android:layout_marginEnd="5dp" android:gravity="center" android:text="모든 기록" android:textSize="15sp" android:textStyle="bold"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/tabBest" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                android:layout_marginStart="5dp" android:gravity="center" android:text="최고 기록" android:textSize="15sp" android:textStyle="bold"
+                android:clickable="true" android:focusable="true" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/allPane" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
         <LinearLayout android:id="@+id/summaryRow" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:layout_marginTop="14dp" android:visibility="gone">
             <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
@@ -24,15 +36,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout android:id="@+id/prCard" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="14dp"
-            android:visibility="gone">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="최고 기록" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
-            <LinearLayout android:id="@+id/prList" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical" android:layout_marginTop="6dp" />
-        </LinearLayout>
-
         <TextView android:id="@+id/summary" style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:layout_marginTop="18dp" />
         <LinearLayout android:id="@+id/list" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -41,5 +44,21 @@
             android:layout_marginTop="40dp" android:gravity="center" android:visibility="gone"
             android:text="아직 기록이 없습니다.\n첫 화면에서 시작을 눌러 첫 기록을 남겨 보세요."
             android:textSize="15sp" android:textColor="@color/sub" android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/prPane" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+        <LinearLayout android:id="@+id/prCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="14dp" android:background="@drawable/bg_card" android:tag="glass" android:padding="14dp"
+            android:visibility="gone">
+            <LinearLayout android:id="@+id/prList" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+            <TextView android:id="@+id/prEmpty" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="40dp" android:gravity="center" android:visibility="gone"
+                android:text="아직 최고 기록이 없습니다.\n1km 넘게 달리면 가장 빠른 1km가 여기에 남습니다."
+                android:textSize="15sp" android:textColor="@color/sub" android:lineSpacingExtra="4dp" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
