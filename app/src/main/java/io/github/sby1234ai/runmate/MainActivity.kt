@@ -448,7 +448,7 @@ class MainActivity : AppCompatActivity() {
                 android.graphics.drawable.GradientDrawable().apply { cornerRadius = 10 * resources.displayMetrics.density; setColor(-1) })
             slash.visibility = if (on) View.GONE else View.VISIBLE
             text.setTextColor(if (on) 0xFFFFFFFF.toInt() else 0x80FFFFFF.toInt())
-            (slash.parent as View).alpha = if (on) 1f else 0.55f
+            box.alpha = if (on) 1f else 0.75f
             val scale = if (on) 1f else 0.94f
             if (animate) box.animate().scaleX(scale).scaleY(scale).setDuration(180).start() else { box.scaleX = scale; box.scaleY = scale }
             box.contentDescription = "$name ${if (on) "켜짐" else "꺼짐"}, 눌러서 바꾸기"

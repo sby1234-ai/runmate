@@ -72,32 +72,34 @@
             <!-- 시작 버튼은 맨 아래(엄지가 닿는 곳) -->
             <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="24dp" />
 
-            <!-- 빠른 켜고 끄기: 음성 안내 · 자동 일시정지(켜짐 = 청록 칸, 꺼짐 = 무색·작게·사선) -->
+            <!-- 빠른 켜고 끄기: 아이콘 버튼 두 개(음성 안내 · 자동 일시정지), 이름은 아래에 작게 -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginBottom="12dp">
-                <LinearLayout android:id="@+id/togVoice" android:layout_width="0dp" android:layout_weight="1" android:layout_height="84dp"
-                    android:layout_marginEnd="6dp" android:orientation="vertical" android:gravity="center"
-                    android:clickable="true" android:focusable="true">
-                    <FrameLayout android:layout_width="28dp" android:layout_height="28dp">
-                        <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="14dp">
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:gravity="center_horizontal" android:layout_marginEnd="14dp">
+                    <FrameLayout android:id="@+id/togVoice" android:layout_width="58dp" android:layout_height="58dp"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="26dp" android:layout_height="26dp" android:layout_gravity="center"
                             android:src="@drawable/ic_volume" android:importantForAccessibility="no" />
-                        <ImageView android:id="@+id/togVoiceSlash" android:layout_width="match_parent" android:layout_height="match_parent"
+                        <ImageView android:id="@+id/togVoiceSlash" android:layout_width="26dp" android:layout_height="26dp" android:layout_gravity="center"
                             android:src="@drawable/ic_slash" android:importantForAccessibility="no" />
                     </FrameLayout>
                     <TextView android:id="@+id/togVoiceText" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="음성 안내" android:textSize="14sp" android:textStyle="bold" />
+                        android:layout_marginTop="6dp" android:text="음성 안내" android:textSize="12sp" android:textStyle="bold"
+                        android:shadowColor="#73000000" android:shadowRadius="8" />
                 </LinearLayout>
-                <LinearLayout android:id="@+id/togPause" android:layout_width="0dp" android:layout_weight="1" android:layout_height="84dp"
-                    android:layout_marginStart="6dp" android:orientation="vertical" android:gravity="center"
-                    android:clickable="true" android:focusable="true">
-                    <FrameLayout android:layout_width="28dp" android:layout_height="28dp">
-                        <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:gravity="center_horizontal" android:layout_marginStart="14dp">
+                    <FrameLayout android:id="@+id/togPause" android:layout_width="58dp" android:layout_height="58dp"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="26dp" android:layout_height="26dp" android:layout_gravity="center"
                             android:src="@drawable/ic_pause" android:importantForAccessibility="no" />
-                        <ImageView android:id="@+id/togPauseSlash" android:layout_width="match_parent" android:layout_height="match_parent"
+                        <ImageView android:id="@+id/togPauseSlash" android:layout_width="26dp" android:layout_height="26dp" android:layout_gravity="center"
                             android:src="@drawable/ic_slash" android:importantForAccessibility="no" />
                     </FrameLayout>
                     <TextView android:id="@+id/togPauseText" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="자동 일시정지" android:textSize="14sp" android:textStyle="bold" />
+                        android:layout_marginTop="6dp" android:text="자동 일시정지" android:textSize="12sp" android:textStyle="bold"
+                        android:shadowColor="#73000000" android:shadowRadius="8" />
                 </LinearLayout>
             </LinearLayout>
 
