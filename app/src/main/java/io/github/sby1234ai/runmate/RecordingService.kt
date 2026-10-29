@@ -325,6 +325,7 @@ class RecordingService : Service() {
         val nowE = android.os.SystemClock.elapsedRealtime()
         val active = if (s.recording) s.activeMs(nowE) else 0L
         val base = nowE - active
+        if (BuildConfig.DEBUG) android.util.Log.d("RMTIME", "notif $nowE $base ${s.recording && !s.paused}")
         v.setChronometer(R.id.nTime, base, null, s.recording && !s.paused)
         v.setTextViewText(R.id.nDist, if (layout == R.layout.notif_run_small) "${Format.km(s.stats.distance)} km" else Format.km(s.stats.distance))
         val state = when {

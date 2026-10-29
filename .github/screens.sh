@@ -65,34 +65,42 @@ adb shell cmd statusbar expand-notifications; move 3
 shot 19_shade 0
 adb shell cmd statusbar collapse
 # 앱 시간과 알림(상태창) 시간이 같은지, 실제 30초가 화면에서도 30초인지
-readt() {  # $1=리소스 id → 화면에 보이는 시간(초)과 그때의 실제 시각
-  adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1
-  adb shell cat /sdcard/u.xml > /tmp/u.xml
-  python3 - "$1" <<'PY'
-import re,sys,time
-x=open('/tmp/u.xml',encoding='utf-8').read()
-m=re.search(r'text="([0-9:]+)"[^>]*resource-id="[^"]*:id/'+sys.argv[1]+'"',x)
-def sec(t):
-    p=[int(v) for v in t.split(':')]; s=0
-    for v in p: s=s*60+v
-    return s
-print(f"{sec(m.group(1)) if m else -1} {time.time():.2f} {m.group(1) if m else 'none'}")
-PY
-}
+# (디버그 빌드는 앱이 화면에 보인 초와 알림 시계의 기준값을 로그 RMTIME으로 남김)
+adb logcat -c
 adb shell am start -n $P/.MainActivity >/dev/null; move 3
-A1=$(readt time); move 30; A2=$(readt time)
-adb shell cmd statusbar expand-notifications; sleep 2
-N1=$(readt nTime)
-adb shell cmd statusbar collapse; sleep 1
-A3=$(readt time)
-python3 - "$A1" "$A2" "$N1" "$A3" <<'PY' > shots/time_check.txt
-import sys
-a1,a2,n1,a3=[v.split() for v in sys.argv[1:5]]
-s=lambda v:int(v[0]); t=lambda v:float(v[1])
-print(f"앱 시간 {a1[2]} → {a2[2]}: 화면 {s(a2)-s(a1)}초 / 실제 {t(a2)-t(a1):.1f}초")
-# 알림을 읽은 순간의 앱 시간 = 앞뒤 앱 시간 사이를 실제 시각으로 나눠 추정
-est = s(a2) + (t(n1)-t(a2)) * (s(a3)-s(a2)) / max(0.1, t(a3)-t(a2))
-print(f"알림 시간 {n1[2]} / 같은 순간 앱 시간(추정) {est:.1f}초 → 차이 {s(n1)-est:+.1f}초")
+H1=$(date +%s.%N); move 30; H2=$(date +%s.%N)
+send pause; move 5; send resume; move 10
+adb logcat -d -s RMTIME:D > shots/rmtime.log
+python3 - "$H1" "$H2" <<'PY' > shots/time_check.txt
+import sys,re
+h1,h2=float(sys.argv[1]),float(sys.argv[2])
+app=[];notif=[]
+for line in open('shots/rmtime.log',encoding='utf-8',errors='ignore'):
+    m=re.search(r'RMTIME\s*:\s*app (\d+) (\d+)',line)
+    if m: app.append((int(m.group(1)),int(m.group(2))))
+    m=re.search(r'RMTIME\s*:\s*notif (\d+) (\d+) (true|false)',line)
+    if m: notif.append((int(m.group(1)),int(m.group(2)),m.group(3)=='true'))
+print(f"앱 화면 갱신 {len(app)}번, 알림 기준값 {len(notif)}번")
+# 1) 같은 순간 알림 시계가 보여 줄 초 = (그때 기기 시계 - 알림 기준값)/1000 → 앱이 보인 초와 같은지
+bad=0; checked=0
+for e,shown in app:
+    cur=[n for n in notif if n[0]<=e]
+    if not cur: continue
+    ne,base,running=cur[-1]
+    if not running: continue
+    checked+=1
+    if (e-base)//1000 != shown: bad+=1
+print(f"앱 초 vs 알림 시계 초: {checked}번 비교, 다른 경우 {bad}번")
+# 2) 1초 단위: 앱이 보인 초가 한 번에 2초 이상 뛰거나 거꾸로 간 적이 있는지
+jumps=[(a,b) for a,b in zip(app,app[1:]) if b[1]-a[1] not in (0,1)]
+print(f"초가 0·1이 아닌 만큼 바뀐 경우 {len(jumps)}번 (일시정지·다시 시작 순간 제외 시 0이어야 함): {jumps[:3]}")
+# 3) 실제 30초 동안 화면 시간 증가
+w=[x for x in app if True]
+print(f"호스트 실제 {h2-h1:.1f}초 동안(달리는 중) 기기 시계 기준 화면 초 증가는 아래 1초 간격 확인으로 대신")
+if len(app)>=2:
+    spans=[(b[0]-a[0], b[1]-a[1]) for a,b in zip(app,app[1:]) if b[1]-a[1]==1]
+    avg=sum(s for s,_ in spans)/len(spans) if spans else 0
+    print(f"화면 초가 1 오를 때 기기 시계 간격 평균 {avg:.0f}ms (1000ms 근처여야 함)")
 PY
 cat shots/time_check.txt
 cat shots/pause_check.txt

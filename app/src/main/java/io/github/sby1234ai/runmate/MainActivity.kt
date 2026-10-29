@@ -344,7 +344,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.lapLabel).text = "${lap.number}km째 페이스"
         findViewById<TextView>(R.id.steps).text = String.format(java.util.Locale.KOREA, "%,d", s.steps)
         findViewById<TextView>(R.id.cadence).text = s.cadence?.toString() ?: "--"
-        timeView.text = android.text.format.DateUtils.formatElapsedTime(s.activeNow() / 1000)
+        val nowE = android.os.SystemClock.elapsedRealtime()
+        val shown = s.activeMs(nowE) / 1000
+        timeView.text = android.text.format.DateUtils.formatElapsedTime(shown)
+        // 디버그 빌드에서만: 화면에 보인 초와 그 순간의 기기 시계(에뮬레이터 시간 일치 점검용)
+        if (BuildConfig.DEBUG) android.util.Log.d("RMTIME", "app $nowE $shown")
         timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
     }
 
