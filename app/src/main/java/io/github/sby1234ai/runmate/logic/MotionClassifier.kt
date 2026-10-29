@@ -80,6 +80,21 @@ class MotionClassifier(
          * 어떤 휴대폰·상황에서는 실제로 움직이는데도 GPS 속도가 0으로 오므로,
          * 그때 위치가 초속 1m 넘게 바뀌었다면 계산한 속도를 씁니다(가만히 있을 때의 GPS 흔들림은 대개 그보다 작음).
          */
+        /**
+         * 최근 windowMs 동안 실제로 minMeters 넘게 이동했는지.
+         * 화면이 꺼져 위치가 드문드문 들어오면 순간 속도가 낮게 계산될 수 있어,
+         * 이동 거리로 한 번 더 확인해 움직이는 중에 '멈춤'(자동 일시정지)이 되지 않게 합니다.
+         */
+        fun movedRecently(points: List<TrackPoint>, now: Long, windowMs: Long = 10_000, minMeters: Double = 12.0): Boolean {
+            if (points.size < 2) return false
+            val last = points.last()
+            if (now - last.time > windowMs) return false
+            var i = points.size - 1
+            while (i > 0 && last.time - points[i - 1].time <= windowMs && !points[i].breakBefore) i--
+            val first = points[i]
+            return first !== last && Geo.distance(first.lat, first.lon, last.lat, last.lon) >= minMeters
+        }
+
         fun pickSpeed(reported: Double?, derived: Double?): Double? = when {
             reported != null && reported > 0.2 -> reported
             derived != null && derived > 1.0 -> derived

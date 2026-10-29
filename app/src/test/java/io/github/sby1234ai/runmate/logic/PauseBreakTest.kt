@@ -21,4 +21,14 @@ class PauseBreakTest {
         assertEquals(0.0, MotionClassifier.pickSpeed(0.0, 0.6)!!, 0.001)   // 제자리 흔들림은 무시
         assertEquals(1.5, MotionClassifier.pickSpeed(null, 1.5)!!, 0.001)
     }
+
+    @Test fun 최근_10초에_12m_넘게_움직였으면_멈춤으로_보지_않는다() {
+        fun p(t: Long, dLat: Double) = TrackPoint(t, 35.85 + dLat, 128.55, 0f, 5f, Motion.STILL)
+        val moving = listOf(p(0, 0.0), p(4_000, 0.00008), p(8_000, 0.00016))       // 8초에 약 18m
+        assertEquals(true, MotionClassifier.movedRecently(moving, 8_000))
+        val jitter = listOf(p(0, 0.0), p(4_000, 0.00003), p(8_000, 0.00001))       // 제자리 흔들림
+        assertEquals(false, MotionClassifier.movedRecently(jitter, 8_000))
+        val old = listOf(p(0, 0.0), p(30_000, 0.0003))                               // 10초 넘게 떨어진 점은 안 봄
+        assertEquals(false, MotionClassifier.movedRecently(old, 30_000))
+    }
 }

@@ -89,7 +89,11 @@ object RunRecorder {
                 if (derived > MAX_SPEED_MPS) return@synchronized   // 순간 이동처럼 튄 점은 버림
             }
             val speed = MotionClassifier.pickSpeed(if (loc.hasSpeed()) loc.speed.toDouble() else null, derived)
-            val motion = classifier.onSpeed(speed, loc.time)
+            val raw = classifier.onSpeed(speed, loc.time)
+            val candidate = TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, raw)
+            // 속도로는 '멈춤'이어도 최근 10초에 12m 넘게 움직였으면 걷는 중으로 봅니다
+            val motion = if (raw == Motion.STILL && !breakNext &&
+                MotionClassifier.movedRecently(points + candidate, loc.time)) Motion.WALK else raw
             points.add(TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, motion, breakBefore = breakNext && prev != null))
             breakNext = false
             pause.update(motion, System.currentTimeMillis())   // 시간 계산은 모두 휴대폰 시계 하나로
