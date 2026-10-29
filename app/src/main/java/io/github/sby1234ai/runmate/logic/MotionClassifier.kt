@@ -24,6 +24,12 @@ class MotionClassifier(
         lastActivityAt = timeMs
     }
 
+    /** 일시정지에서 다시 시작할 때: 지난 속도 기록을 비우고 '걷기'에서 출발합니다. */
+    fun resetSpeeds() {
+        speeds.clear()
+        current = Motion.WALK
+    }
+
     fun onSpeed(speedMps: Double?, timeMs: Long): Motion {
         if (speedMps != null && speedMps >= 0 && speedMps < 12) {
             speeds.addLast(speedMps)

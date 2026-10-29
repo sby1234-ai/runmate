@@ -93,8 +93,9 @@ class RecordingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP -> finish()
-            ACTION_PAUSE -> { RunRecorder.setManualPause(true, System.currentTimeMillis()); voice?.say("일시정지했습니다."); updateNotification() }
-            ACTION_RESUME -> { RunRecorder.setManualPause(false, System.currentTimeMillis()); voice?.say("다시 시작합니다."); updateNotification() }
+            // 음성 안내("일시정지"/"다시 시작")는 Coach가 상태 변화를 보고 한 번만 말합니다
+            ACTION_PAUSE -> { RunRecorder.setManualPause(true, System.currentTimeMillis()); updateNotification() }
+            ACTION_RESUME -> { RunRecorder.setManualPause(false, System.currentTimeMillis()); updateNotification() }
             else -> begin()
         }
         return START_NOT_STICKY
@@ -107,7 +108,7 @@ class RecordingService : Service() {
         if (RunRecorder.recording) return
         val plan = IntervalPlan.byId(Prefs.interval(this))
         val autoPause = Prefs.autoPause(this)
-        RunRecorder.start(System.currentTimeMillis(), plan)
+        RunRecorder.start(System.currentTimeMillis(), plan, autoPause)
         acquireWakeLock()
         if (Prefs.voice(this)) {
             voice = Voice(this)
@@ -208,7 +209,7 @@ class RecordingService : Service() {
     private fun buildNotification(text: String): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val manual = RunRecorder.snapshot().manualPaused
+        val manual = RunRecorder.snapshot().paused   // 자동으로 멈춘 경우도 「다시 시작」을 보여 줌
         val toggle = PendingIntent.getService(this, 3,
             Intent(this, RecordingService::class.java).setAction(if (manual) ACTION_RESUME else ACTION_PAUSE),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -229,10 +230,10 @@ class RecordingService : Service() {
     private fun updateNotification() {
         val s = RunRecorder.snapshot()
         val now = System.currentTimeMillis()
-        val time = if (Prefs.autoPause(this)) s.activeMs(now) else s.elapsedMs(now)
+        val time = s.activeMs(now)
         val state = when {
             s.manualPaused -> "일시정지"
-            Prefs.autoPause(this) && s.paused -> "멈춰 있어 자동 일시정지"
+            s.autoPaused -> "멈춰 있어 자동 일시정지"
             s.lastAccuracy == null -> "GPS 찾는 중"
             else -> "지금 ${s.motion.label}"
         }

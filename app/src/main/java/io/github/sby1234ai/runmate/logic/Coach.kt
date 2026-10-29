@@ -48,7 +48,7 @@ class Coach(
             out += sb.toString()
         }
 
-        if (autoPause && paused != wasPaused) {
+        if (paused != wasPaused) {
             out += if (paused) "일시정지." else "다시 시작합니다."
         }
         wasPaused = paused

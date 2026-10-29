@@ -106,7 +106,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnStart).setOnClickListener { startRecording() }
         findViewById<View>(R.id.btnPause).setOnClickListener {
             val s = RunRecorder.snapshot()
-            if (s.recording) RecordingService.pause(this, !s.manualPaused)
+            // 멈춘 상태(자동 포함)면 다시 시작, 아니면 일시정지
+            if (s.recording) RecordingService.pause(this, !s.paused)
         }
         val stop = findViewById<View>(R.id.btnStop)
         stop.setOnClickListener {
@@ -336,9 +337,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderTime(s: RunRecorder.Snapshot) {
         val now = System.currentTimeMillis()
-        val auto = Prefs.autoPause(this)
-        timeView.text = Format.duration(if (auto) s.activeMs(now) else s.elapsedMs(now))
-        timeLabel.text = if (auto) "운동 시간 (멈춘 시간 제외)" else "전체 시간"
+        timeView.text = Format.duration(s.activeMs(now))
+        timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
     }
 
     private fun renderInterval(s: RunRecorder.Snapshot) {
@@ -360,8 +360,8 @@ class MainActivity : AppCompatActivity() {
         sky.dim = s.recording
         if (running != s.recording) { running = s.recording; applyBackground() }
 
-        val autoPaused = s.recording && s.paused && Prefs.autoPause(this)
-        val paused = s.manualPaused || autoPaused
+        val autoPaused = s.recording && s.autoPaused
+        val paused = s.recording && s.paused
         // 상태 칩: 뛰기는 주홍, 걷기는 청록, 멈춤은 반투명
         val (label, chip) = when {
             s.manualPaused -> "일시정지" to 0x66141B24
@@ -373,8 +373,8 @@ class MainActivity : AppCompatActivity() {
         motionView.text = label
         motionView.setTextColor(0xFFFFFFFF.toInt())
         motionView.background.mutate().setTint(chip)
-        findViewById<TextView>(R.id.pauseText).text = if (s.manualPaused) "다시 시작" else "일시정지"
-        findViewById<ImageView>(R.id.pauseIcon).setImageResource(if (s.manualPaused) R.drawable.ic_play else R.drawable.ic_pause_bars)
+        findViewById<TextView>(R.id.pauseText).text = if (paused) "다시 시작" else "일시정지"
+        findViewById<ImageView>(R.id.pauseIcon).setImageResource(if (paused) R.drawable.ic_play else R.drawable.ic_pause_bars)
         runner.motion = s.motion
         runner.paused = paused
         runner.ringColor = when {

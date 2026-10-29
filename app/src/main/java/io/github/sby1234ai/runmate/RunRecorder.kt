@@ -29,17 +29,15 @@ object RunRecorder {
         val pausedTotal: Long,
         val pointCount: Int,
         val endedAt: Long?,
-        val manualPausedAt: Long?,
-        val manualPausedTotal: Long,
+        /** 멈춘 이유가 「일시정지」 버튼이면 true, 자동이면 false (멈춰 있지 않으면 의미 없음) */
+        val pausedByUser: Boolean,
     ) {
+        /** 멈춘 상태(자동이든 버튼이든 하나로 셈) */
         val paused: Boolean get() = pausedAt != null
-        /** 「일시정지」 버튼으로 멈춘 상태 */
-        val manualPaused: Boolean get() = manualPausedAt != null
-        private fun manualMs(now: Long): Long = manualPausedTotal + (manualPausedAt?.let { (endedAt ?: now) - it } ?: 0L)
-        /** 자동·수동으로 멈춘 시간을 모두 뺀 운동 시간(ms). */
-        fun activeMs(now: Long): Long = (PauseTracker.activeTime(startedAt, endedAt ?: now, pausedAt, pausedTotal) - manualMs(now)).coerceAtLeast(0)
-        /** 수동 일시정지만 뺀 전체 시간(ms). 자동 일시정지를 끈 경우에 보여 줍니다. */
-        fun elapsedMs(now: Long): Long = ((endedAt ?: now) - startedAt - manualMs(now)).coerceAtLeast(0)
+        val manualPaused: Boolean get() = paused && pausedByUser
+        val autoPaused: Boolean get() = paused && !pausedByUser
+        /** 멈춘 시간을 뺀 운동 시간(ms). 멈춘 구간은 한 번만 뺍니다. */
+        fun activeMs(now: Long): Long = PauseTracker.activeTime(startedAt, endedAt ?: now, pausedAt, pausedTotal)
     }
 
     fun interface Listener { fun onUpdate(s: Snapshot) }
@@ -57,8 +55,6 @@ object RunRecorder {
     private var plan: IntervalPlan? = null
     private var endedAt: Long? = null
     private var demoMotion: Motion? = null
-    private var manualPausedAt: Long? = null
-    private var manualPausedTotal = 0L
     private var breakNext = false
 
     @Volatile var recording = false; private set
@@ -66,12 +62,12 @@ object RunRecorder {
     var usingActivityRecognition = false
     private var savedRunId: Long? = null
 
-    fun start(now: Long, plan: IntervalPlan?) {
+    fun start(now: Long, plan: IntervalPlan?, autoPause: Boolean = true) {
         synchronized(this) {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
-            pause = PauseTracker(); this.plan = plan; endedAt = null; demoMotion = null
-            manualPausedAt = null; manualPausedTotal = 0L; breakNext = false
+            pause = PauseTracker(autoEnabled = autoPause); this.plan = plan; endedAt = null; demoMotion = null
+            breakNext = false
             startedAt = now; recording = true
         }
         notifyListeners()
@@ -81,7 +77,7 @@ object RunRecorder {
         if (!recording) return
         synchronized(this) {
             lastAccuracy = if (loc.hasAccuracy()) loc.accuracy else null
-            if (manualPausedAt != null) return@synchronized          // 일시정지 중에는 기록하지 않음
+            if (pause.manual) return@synchronized                   // 「일시정지」 중에는 기록하지 않음
             if (loc.hasAccuracy() && loc.accuracy > MAX_ACCURACY_M) return@synchronized
             val prev = points.lastOrNull()
             var derived: Double? = null
@@ -96,7 +92,7 @@ object RunRecorder {
             val motion = classifier.onSpeed(speed, loc.time)
             points.add(TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, motion, breakBefore = breakNext && prev != null))
             breakNext = false
-            pause.update(motion, loc.time)
+            pause.update(motion, System.currentTimeMillis())   // 시간 계산은 모두 휴대폰 시계 하나로
             stats = RunStats.of(points)
         }
         notifyListeners()
@@ -111,7 +107,6 @@ object RunRecorder {
         val run = synchronized(this) {
             recording = false
             endedAt = System.currentTimeMillis()
-            manualPausedAt?.let { manualPausedTotal += endedAt!! - it; manualPausedAt = null }
             if (points.size >= 2) Run(startedAt, ArrayList(points)) else null
         }
         notifyListeners()
@@ -122,16 +117,22 @@ object RunRecorder {
 
     fun snapshot(): Snapshot = synchronized(this) {
         Snapshot(recording, startedAt, stats, demoMotion ?: classifier.current, lastAccuracy, usingActivityRecognition, savedRunId,
-            plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt, manualPausedAt, manualPausedTotal)
+            plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt, pause.manual)
     }
 
-    /** 「일시정지」·「다시 시작」 버튼. 멈춘 동안의 이동은 거리·시간에 넣지 않습니다. */
+    /**
+     * 「일시정지」(on=true)·「다시 시작」(on=false) 버튼.
+     * 자동으로 멈춘 상태에서 「다시 시작」을 누르면 바로 시간이 흐르고, 잠시 동안 자동 일시정지를 걸지 않습니다.
+     * 버튼으로 멈춘 동안의 이동은 거리·시간에 넣지 않습니다.
+     */
     fun setManualPause(on: Boolean, now: Long) {
         synchronized(this) {
             if (!recording) return
-            if (on && manualPausedAt == null) manualPausedAt = now
-            if (!on && manualPausedAt != null) {
-                manualPausedTotal += now - manualPausedAt!!; manualPausedAt = null; breakNext = true
+            if (on) pause.pauseManually(now)
+            else {
+                if (pause.manual) breakNext = true
+                pause.resume(now)
+                classifier.resetSpeeds()     // 멈춰 있던 동안의 느린 속도가 남아 바로 다시 '멈춤'이 되지 않게
             }
         }
         notifyListeners()
