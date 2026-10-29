@@ -1,0 +1,36 @@
+name: web-pages
+
+# web/ 폴더(GPX 기록 보기 화면)만 GitHub Pages로 공개합니다. 앱 소스나 서명 키는 올라가지 않습니다.
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 공개할 파일만 모으기
+        run: |
+          mkdir -p site
+          cp web/index.html web/style.css web/logic.js web/app.js web/sample.gpx site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
