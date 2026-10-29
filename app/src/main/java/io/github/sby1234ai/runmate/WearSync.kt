@@ -17,6 +17,31 @@ import io.github.sby1234ai.runmate.logic.Motion
  *  - 휴대폰 → 워치  /runmate/state : idle  또는  rec;paused(0/1);운동시간ms;거리m;상태글
  */
 object WearSync {
+    /** 워치 심박 저장 파일: 한 줄에 "시각ms,bpm". 40일 지난 것은 가끔 정리 */
+    private fun hrFile(ctx: Context) = java.io.File(ctx.filesDir, "watch_hr.txt")
+    @Volatile var lastBpm = 0; @Volatile var lastBpmAt = 0L
+
+    @Synchronized fun saveHeart(ctx: Context, t: Long, bpm: Int) {
+        lastBpm = bpm; lastBpmAt = t
+        val f = hrFile(ctx)
+        f.appendText("$t,$bpm\n")
+        if (f.length() > 2_000_000) {
+            val cut = t - 40L * 86_400_000
+            val keep = f.readLines().filter { (it.substringBefore(',').toLongOrNull() ?: 0) > cut }
+            f.writeText(keep.joinToString("\n", postfix = "\n"))
+        }
+    }
+
+    /** [from, to] 사이 워치 심박(시간순) */
+    @Synchronized fun heart(ctx: Context, from: Long, to: Long): List<Pair<Long, Int>> {
+        val f = hrFile(ctx); if (!f.exists()) return emptyList()
+        return f.readLines().mapNotNull { l ->
+            val t = l.substringBefore(',').toLongOrNull() ?: return@mapNotNull null
+            if (t !in from..to) return@mapNotNull null
+            l.substringAfter(',').toIntOrNull()?.let { t to it }
+        }
+    }
+
     private var nodes: List<String> = emptyList()
     private var nodesAt = 0L
     private var lastPush = 0L
@@ -69,6 +94,12 @@ object WearSync {
 /** 워치가 보낸 명령을 받는 곳(앱이 꺼져 있어도 시스템이 깨워 줌) */
 class WearListener : WearableListenerService() {
     override fun onMessageReceived(e: MessageEvent) {
+        if (e.path == "/runmate/hr") {
+            // 워치 심박: 기록 중일 때만 저장
+            val bpm = String(e.data, Charsets.UTF_8).toIntOrNull() ?: return
+            if (RunRecorder.recording && bpm in 30..230) WearSync.saveHeart(this, System.currentTimeMillis(), bpm)
+            return
+        }
         if (e.path != "/runmate/cmd") return
         when (String(e.data, Charsets.UTF_8)) {
             "start" -> WearSync.startFromWatch(this)

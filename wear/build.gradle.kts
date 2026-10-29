@@ -50,4 +50,7 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    // 워치 심박 센서(헬스 서비스)
+    implementation("androidx.health:health-services-client:1.0.0-beta03")
+    implementation("androidx.concurrent:concurrent-futures:1.2.0")
 }

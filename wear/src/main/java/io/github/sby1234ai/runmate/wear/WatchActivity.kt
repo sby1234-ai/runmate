@@ -1,6 +1,14 @@
 package io.github.sby1234ai.runmate.wear
 
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
+import androidx.health.services.client.HealthServices
+import androidx.health.services.client.MeasureCallback
+import androidx.health.services.client.data.Availability
+import androidx.health.services.client.data.DataPointContainer
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.DeltaDataType
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -42,6 +50,42 @@ class WatchActivity : Activity(), MessageClient.OnMessageReceivedListener {
     private var activeMs = 0L
     private var receivedAt = 0L
     private var lastStateAt = 0L
+    private var bpm = 0
+    private var bpmSentAt = 0L
+    private var measuring = false
+
+    /** 심박 센서 값: 화면에 보이고, 기록 중이면 5초마다 휴대폰으로 */
+    private val hrCallback = object : MeasureCallback {
+        override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {}
+        override fun onDataReceived(data: DataPointContainer) {
+            val v = data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value?.toInt() ?: return
+            if (v <= 0) return
+            main.post {
+                bpm = v; heart.text = "♥ $v"
+                val now = SystemClock.elapsedRealtime()
+                if (recording && !paused && now - bpmSentAt >= 5000) { bpmSentAt = now; send("$v", "/runmate/hr") }
+            }
+        }
+    }
+
+    private fun hasSensor() = checkSelfPermission(Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
+
+    private fun startHeart() {
+        if (measuring || !hasSensor()) return
+        try { HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, hrCallback); measuring = true }
+        catch (_: Exception) { heart.text = "" }
+    }
+
+    private fun stopHeart() {
+        if (!measuring) return
+        measuring = false
+        try { HealthServices.getClient(this).measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, hrCallback) } catch (_: Exception) {}
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        startHeart()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +126,7 @@ class WatchActivity : Activity(), MessageClient.OnMessageReceivedListener {
 
         btnMain.setOnClickListener {
             it.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+            if (!hasSensor()) requestPermissions(arrayOf(Manifest.permission.BODY_SENSORS), 1)
             send(when { !recording -> "start"; paused -> "resume"; else -> "pause" })
         }
         // 실수로 끝나지 않게 종료는 길게
@@ -95,11 +140,13 @@ class WatchActivity : Activity(), MessageClient.OnMessageReceivedListener {
         Wearable.getMessageClient(this).addListener(this)
         send("hello")      // 휴대폰에 지금 상태를 바로 보내 달라고 함
         main.post(tick)
+        startHeart()
     }
 
     override fun onPause() {
         Wearable.getMessageClient(this).removeListener(this)
         main.removeCallbacks(tick)
+        stopHeart()
         super.onPause()
     }
 
@@ -143,7 +190,8 @@ class WatchActivity : Activity(), MessageClient.OnMessageReceivedListener {
 
     private fun render() {
         if (!recording) {
-            status.text = "런메이트"; dist.text = "휴대폰과 함께 기록"; heart.text = ""
+            status.text = "런메이트"; dist.text = "휴대폰과 함께 기록"
+            heart.text = if (bpm > 0) "♥ $bpm" else if (hasSensor()) "" else "시작하면 심박 권한을 묻습니다"
             btnMain.text = "시작"; btnStop.visibility = View.GONE
             hint.text = "시작하면 휴대폰이 위치를 기록합니다"
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -156,11 +204,11 @@ class WatchActivity : Activity(), MessageClient.OnMessageReceivedListener {
         renderTime()
     }
 
-    private fun send(cmd: String) {
+    private fun send(cmd: String, path: String = "/runmate/cmd") {
         val bytes = cmd.toByteArray(Charsets.UTF_8)
         Wearable.getNodeClient(this).connectedNodes.addOnSuccessListener { nodes ->
-            if (nodes.isEmpty()) { hint.text = "휴대폰이 연결되어 있지 않습니다"; return@addOnSuccessListener }
-            nodes.forEach { Wearable.getMessageClient(this).sendMessage(it.id, "/runmate/cmd", bytes) }
+            if (nodes.isEmpty()) { if (path == "/runmate/hr") return@addOnSuccessListener; hint.text = "휴대폰이 연결되어 있지 않습니다"; return@addOnSuccessListener }
+            nodes.forEach { Wearable.getMessageClient(this).sendMessage(it.id, path, bytes) }
         }
     }
 }

@@ -161,11 +161,15 @@ class DetailActivity : AppCompatActivity() {
     private fun loadHeart() {
         val r = run ?: return
         val card = findViewById<View>(R.id.heartCard)
-        if (!HealthLink.available(this)) return
-        card.visibility = View.VISIBLE
         val text = findViewById<TextView>(R.id.heartText)
         val btn = findViewById<View>(R.id.heartBtn)
         val chart = findViewById<io.github.sby1234ai.runmate.ui.HeartChart>(R.id.heartChart)
+        val end = r.points.lastOrNull()?.time ?: r.id
+        // 런메이트 워치 앱이 보낸 심박이 있으면 그것을 먼저(헬스 커넥트 권한 없이도 보임)
+        val local = WearSync.heart(this, r.id, end)
+        if (local.size >= 2) { card.visibility = View.VISIBLE; btn.visibility = View.GONE; showHeart(r, end, local, text, chart); return }
+        if (!HealthLink.available(this)) return
+        card.visibility = View.VISIBLE
         btn.setOnClickListener { askHealth.launch(HealthLink.PERMISSIONS) }
         lifecycleScope.launch {
             try {
@@ -174,26 +178,29 @@ class DetailActivity : AppCompatActivity() {
                     btn.visibility = View.VISIBLE; chart.visibility = View.GONE; return@launch
                 }
                 btn.visibility = View.GONE
-                val end = r.points.lastOrNull()?.time ?: r.id
                 val hr = HealthLink.heart(this@DetailActivity, r.id, end)
-                if (hr.size < 2) { text.text = "이 시간대에 워치 심박 기록이 없습니다. 촘촘한 심박을 남기려면 달릴 때 워치에서도 운동을 시작해 주세요."; chart.visibility = View.GONE; return@launch }
-                val avg = hr.map { it.second }.average().toInt(); val max = hr.maxOf { it.second }
-                // 1km 구간별 평균 심박: 각 km를 지난 시각으로 나눔
-                val marks = mutableListOf<Long>(); var acc = 0.0
-                r.points.zipWithNext().forEach { (a, b) ->
-                    if (!b.breakBefore) acc += io.github.sby1234ai.runmate.logic.Geo.distance(a.lat, a.lon, b.lat, b.lon)
-                    if (acc >= (marks.size + 1) * 1000.0) marks += b.time
-                }
-                val bounds = listOf(r.id) + marks + listOf(end)
-                val perKm = bounds.zipWithNext().mapIndexedNotNull { i, (a, b) ->
-                    hr.filter { it.first in a..b }.takeIf { it.isNotEmpty() }?.let { l -> "${i + 1}km ${l.map { it.second }.average().toInt()}" }
-                }
-                text.text = "평균 $avg · 최고 $max bpm" + if (perKm.size > 1) "\n구간 평균  " + perKm.joinToString("  ·  ") else ""
-                chart.samples = hr; chart.visibility = View.VISIBLE
+                if (hr.size < 2) { text.text = "이 시간대에 워치 심박 기록이 없습니다. 런메이트 워치 앱으로 시작하거나, 워치에서도 운동을 시작해 주세요."; chart.visibility = View.GONE; return@launch }
+                showHeart(r, end, hr, text, chart)
             } catch (e: Exception) {
                 text.text = "워치 심박을 읽지 못했습니다(${e.javaClass.simpleName})"
             }
         }
+    }
+
+    private fun showHeart(r: Run, end: Long, hr: List<Pair<Long, Int>>, text: TextView, chart: io.github.sby1234ai.runmate.ui.HeartChart) {
+        val avg = hr.map { it.second }.average().toInt(); val max = hr.maxOf { it.second }
+        // 1km 구간별 평균 심박: 각 km를 지난 시각으로 나눔
+        val marks = mutableListOf<Long>(); var acc = 0.0
+        r.points.zipWithNext().forEach { (a, b) ->
+            if (!b.breakBefore) acc += io.github.sby1234ai.runmate.logic.Geo.distance(a.lat, a.lon, b.lat, b.lon)
+            if (acc >= (marks.size + 1) * 1000.0) marks += b.time
+        }
+        val bounds = listOf(r.id) + marks + listOf(end)
+        val perKm = bounds.zipWithNext().mapIndexedNotNull { i, (a, b) ->
+            hr.filter { it.first in a..b }.takeIf { it.isNotEmpty() }?.let { l -> "${i + 1}km ${l.map { it.second }.average().toInt()}" }
+        }
+        text.text = "평균 $avg · 최고 $max bpm" + if (perKm.size > 1) "\n구간 평균  " + perKm.joinToString("  ·  ") else ""
+        chart.samples = hr; chart.visibility = View.VISIBLE
     }
 
     private fun shareImage() {
