@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>런메이트</title>
 <meta name="description" content="뛰거나 걸으면 경로와 거리를 기록하고 걷기와 뛰기를 자동으로 나눠 보여 주는 안드로이드 러닝 앱, 런메이트의 웹 화면입니다.">
-<meta name="theme-color" content="#f2f5f7">
-<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0e141a">
+<meta name="color-scheme" content="dark">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="page">
   <header class="top">
-    <h1>런메이트</h1>
+    <h1>런메이트<span class="ver">v0.3</span></h1>
     <p class="lead">뛰거나 걸으면 경로와 거리를 기록하고, <span class="run-t">뛰기</span>와 <span class="walk-t">걷기</span>를 자동으로 나눠 보여 주는 안드로이드 러닝 앱입니다.</p>
     <div class="cta">
       <a class="btn" href="https://github.com/sby1234-ai/runmate/releases/latest">안드로이드 앱 받기</a>
@@ -58,14 +58,22 @@
 
   <section class="how" aria-labelledby="how-h">
     <h2 id="how-h">앱에서는 이렇게 씁니다</h2>
+    <div class="shots">
+      <figure><img src="img/home.jpg" alt="첫 화면: 지금 날씨에 맞춘 어두운 배경과 이번 주 거리, 시작 버튼" loading="lazy" width="540" height="1200"><figcaption>첫 화면 — 날씨에 따라 바뀌는 배경</figcaption></figure>
+      <figure><img src="img/run.jpg" alt="달리는 중 화면: 운동 시간, 거리, 페이스와 움직이는 러너" loading="lazy" width="540" height="1200"><figcaption>달리는 중 — 시간·거리·페이스</figcaption></figure>
+      <figure><img src="img/detail.jpg" alt="기록 보기: 어두운 지도 위 뛰기·걷기 색으로 나뉜 경로와 기록 숫자" loading="lazy" width="540" height="1200"><figcaption>기록 보기 — 지도와 1km 구간</figcaption></figure>
+      <figure><img src="img/share.jpg" alt="공유 이미지: 거리, 길 모양, 시간·평균 페이스·뛴 비율" loading="lazy" width="540" height="675"><figcaption>공유 이미지 — 지도 없이 길 모양만</figcaption></figure>
+    </div>
+    <p class="drop-note">화면은 에뮬레이터에서 예시 기록으로 찍은 것입니다.</p>
     <ol class="steps">
-      <li><b>시작</b>을 누르고 휴대폰을 주머니에 넣습니다. 화면이 꺼져도 기록이 이어집니다.</li>
-      <li>걷다가 뛰면 휴대폰 동작 인식과 GPS 속도로 <b>걷기·뛰기가 자동으로 바뀝니다.</b> 기준은 1km 7분 35초(초속 2.2m)입니다.</li>
-      <li>달리는 동안 <b>지도</b>에 지나간 길이 그려지고, 1km마다 <b>음성</b>으로 거리와 시간을 알려 줍니다. 신호등 앞에서 멈추면 <b>자동 일시정지</b>합니다.</li>
+      <li><b>시작</b>을 누르고 휴대폰을 주머니에 넣습니다. 화면이 꺼지거나 잠겨도 기록이 이어지고, 휴대폰이 앱을 강제로 꺼도 앱을 다시 열면 그 자리부터 이어서 기록합니다.</li>
+      <li>걷다가 뛰면 휴대폰 동작 인식과 걸음 센서(분당 140걸음 이상), GPS 속도로 <b>걷기·뛰기가 자동으로 바뀝니다.</b> 걸음 수와 케이던스도 함께 기록합니다.</li>
+      <li>알림 카드에서 <b>흐르는 운동 시간, 거리, 몇 km째</b>를 보고, 「일시정지/계속」·「종료」 버튼으로 앱을 열지 않고 조작합니다. 1km마다 <b>음성</b>으로 거리와 시간을 알려 주고, 신호등 앞에서 멈추면 <b>자동 일시정지</b>합니다.</li>
       <li>처음이라면 「1분 뛰기 / 2분 걷기 × 6」 같은 <b>인터벌 코칭</b>을 골라 뛰기와 걷기 차례를 음성으로 안내받을 수 있습니다.</li>
-      <li>끝나면 <b>정지를 길게</b> 누릅니다. 기록 보기에서 지도, 1km 구간, 이번 주 거리와 최고 기록을 보고, 이미지로 공유하거나 GPX로 내보낼 수 있습니다.</li>
+      <li>끝나면 <b>정지를 길게</b> 누르거나 알림의 「종료」를 누릅니다. 기록 보기에서 지도, 1km 구간, 걸음 수, 이번 주 거리와 최고 기록을 보고, 이미지로 공유하거나 GPX로 내보낼 수 있습니다.</li>
+      <li>새 버전이 나오면 앱이 알려 주고, 받은 파일이 진짜인지(SHA-256) 확인한 뒤 설치 화면을 엽니다.</li>
     </ol>
-    <p class="privacy">기록은 휴대폰 안에만 저장되고 인터넷으로 보내지 않습니다. 인터넷은 지도 그림(OpenStreetMap)을 받을 때만 쓰며, 설정에서 지도를 끄면 쓰지 않습니다.</p>
+    <p class="privacy">기록은 휴대폰 안에만 저장되고 인터넷으로 보내지 않습니다. 인터넷은 지도 그림(OpenStreetMap), 날씨(약 10km 단위로 줄인 위치만 Open-Meteo에 보냄), 업데이트 확인(GitHub)에만 쓰며, 설정에서 각각 끌 수 있습니다.</p>
   </section>
 
   <footer class="foot">

@@ -60,7 +60,7 @@
     [[0, "출발"], [pts.length - 1, "도착"]].forEach(function (e) {
       var c = document.createElementNS(NS, "circle");
       c.setAttribute("cx", X(e[0])); c.setAttribute("cy", Y(e[0])); c.setAttribute("r", "7");
-      c.setAttribute("fill", e[1] === "출발" ? "#ffffff" : "var(--ink)"); c.setAttribute("stroke", "var(--ink)"); c.setAttribute("stroke-width", "3");
+      c.setAttribute("fill", e[1] === "출발" ? "var(--bg)" : "var(--ink)"); c.setAttribute("stroke", "var(--ink)"); c.setAttribute("stroke-width", "3");
       svg.appendChild(c);
     });
     box.appendChild(svg);

@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir -p site
           cp web/index.html web/style.css web/logic.js web/app.js web/sample.gpx site/
+          cp -r web/img site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
