@@ -68,7 +68,7 @@ adb shell dumpsys window | grep -m3 -iE "isKeyguardShowing|mShowingLockscreen|Ke
 adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumedActivity" >> shots/lock_state.txt || true
 adb shell cmd statusbar collapse
 # 강제 종료 복구: 달리는 중 앱 프로세스를 죽여도(휴대폰이 강제로 끈 것처럼) 다시 살아나 이어서 기록하는지
-send resume; move 35                                   # 30초마다 중간 저장
+send resume; move 15                                   # 10초마다 중간 저장
 note "R1 강제 종료 직전"
 PID=$(adb shell pidof $P | tr -d '\r')
 adb shell run-as $P kill -9 $PID || adb shell kill -9 $PID

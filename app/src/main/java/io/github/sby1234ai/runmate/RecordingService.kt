@@ -53,7 +53,9 @@ class RecordingService : Service() {
         private const val RESTORE_NOTIF_ID = 2
         const val LOCK_NOTIF_ID = 3
         private const val LOCK_CHANNEL = "lockscreen"
-        private const val CHANNEL = "recording"
+        // 잠금 화면에서도 보이도록 '조용한 알림'이 아닌 기본 등급(소리·진동 없음)으로 새 채널을 씁니다
+        private const val CHANNEL = "recording_v2"
+        private const val OLD_CHANNEL = "recording"
         private const val NOTIF_ID = 1
         private const val AR_REQUEST = 7
 
@@ -92,7 +94,7 @@ class RecordingService : Service() {
             val cues = coach?.update(now, s.startedAt, s.activeNow(), s.stats, s.motion, s.paused) ?: emptyList()
             cues.forEach { voice?.say(it) }
             // 5초마다, 그리고 멈춤↔다시 시작이 바뀌는 순간 바로 알림(잠금 화면 카드)을 고칩니다
-            if (now - lastSavedAt >= 30_000) { lastSavedAt = now; saveCheckpoint() }
+            if (now - lastSavedAt >= 10_000) { lastSavedAt = now; saveCheckpoint() }
             if (now - lastNotifAt > 5000 || s.paused != lastPaused) { lastNotifAt = now; lastPaused = s.paused; updateNotification() }
             ticker.postDelayed(this, 1000)
         }
@@ -232,7 +234,7 @@ class RecordingService : Service() {
 
     private fun stopSteps() { getSystemService(SensorManager::class.java).unregisterListener(stepListener) }
 
-    // 30초마다 진행 중인 기록을 저장(앱이 강제로 꺼져도 이어서 기록하기 위해). 파일 쓰기는 뒤에서
+    // 10초마다 진행 중인 기록을 저장(앱이 강제로 꺼져도 이어서 기록하기 위해). 파일 쓰기는 뒤에서
     private fun saveCheckpoint() {
         val cp = RunRecorder.checkpoint() ?: return
         val app = applicationContext
@@ -286,8 +288,10 @@ class RecordingService : Service() {
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = getSystemService(NotificationManager::class.java)
-            val ch = NotificationChannel(CHANNEL, "러닝 기록 중", NotificationManager.IMPORTANCE_LOW)
-            ch.description = "기록하는 동안 거리와 시간을 보여 줍니다"
+            nm.deleteNotificationChannel(OLD_CHANNEL)
+            val ch = NotificationChannel(CHANNEL, "러닝 기록 중", NotificationManager.IMPORTANCE_DEFAULT)
+            ch.description = "기록하는 동안 거리와 시간을 보여 줍니다(잠금 화면 포함)"
+            ch.setSound(null, null); ch.enableVibration(false); ch.setShowBadge(false)
             ch.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             nm.createNotificationChannel(ch)
             // 화면이 꺼질 때 잠금 화면 위에 달리기 화면을 띄우는 용도(소리·진동 없음)
@@ -339,8 +343,7 @@ class RecordingService : Service() {
             .setContentText("잠금 화면에서 기록을 보여 줍니다")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
-            .setFullScreenIntent(pi, true)
-            .setSilent(true)
+            .setFullScreenIntent(pi, true)        // 무음(setSilent)으로 하면 잠금 화면에 띄우지 않으므로 채널에서 소리만 끔
             .setAutoCancel(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
