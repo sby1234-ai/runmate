@@ -21,6 +21,7 @@ import io.github.sby1234ai.runmate.ui.GlassKind
  * 「시작」 → 3·2·1 → 첫 화면으로 돌아가 기록을 시작합니다(RESULT_OK).
  */
 class PrepActivity : AppCompatActivity() {
+    companion object { const val EXTRA_BG = "bg" }
     private val main = Handler(Looper.getMainLooper())
     private var counting = false
 
@@ -28,6 +29,13 @@ class PrepActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_prep)
         EdgeInsets.apply(this)
+        val bg = intent.getIntExtra(EXTRA_BG, 0)
+        val photo = findViewById<android.widget.ImageView>(R.id.prepBg)
+        if (bg != 0) {
+            photo.setImageResource(bg)
+            if (android.os.Build.VERSION.SDK_INT >= 31) photo.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(14 * resources.displayMetrics.density, 14 * resources.displayMetrics.density, android.graphics.Shader.TileMode.CLAMP))
+            io.github.sby1234ai.runmate.ui.Backdrop.set(resources, bg, photo)
+        }
         renderPlans()
 
         // 음성 안내·자동 일시정지는 첫 화면의 아이콘 토글로 옮김(같은 설정이 두 곳에 있지 않게)
@@ -39,7 +47,7 @@ class PrepActivity : AppCompatActivity() {
         findViewById<View>(R.id.goIcon).background = android.graphics.drawable.GradientDrawable().apply {
             cornerRadius = 8 * resources.displayMetrics.density; setColor(getColor(R.color.walk))
         }
-        go.setOnClickListener { countdown() }
+        go.setOnClickListener { setResult(Activity.RESULT_OK); finish() }
         // 카운트다운 중 뒤로가기는 시작 취소(안드로이드 16 기준이라 onBackPressed 대신 콜백)
         onBackPressedDispatcher.addCallback(this, cancelCount)
     }
@@ -55,29 +63,59 @@ class PrepActivity : AppCompatActivity() {
     private fun renderPlans() {
         val box = findViewById<LinearLayout>(R.id.plans)
         box.removeAllViews()
-        val cur = Prefs.interval(this)
-        val items = listOf(Triple(0, "자유 달리기", "정해진 순서 없이 마음대로")) +
-            IntervalPlan.PRESETS.map { Triple(it.id, "${it.shortName} · ${it.totalSec / 60}분", it.name.substringAfter(" · ", "인터벌")) }
+        val cur = Prefs.interval(this).let { if (IntervalPlan.byId(it) == null) 0 else it }
+        data class Item(val id: Int, val title: String, val detail: String, val min: String, val plan: IntervalPlan?)
+        val items = listOf(Item(0, "자유 달리기", "정해진 순서 없이 마음대로", "∞", null)) + IntervalPlan.PRESETS.map {
+            val body = if (it.walkSec == 0) "${it.runSec / 60}분 뛰기" else it.name.substringAfter(" · ", "")
+            val detail = if (it.warmupSec > 0) "준비 걷기 ${it.warmupSec / 60}분 · $body" else body
+            Item(it.id, it.shortName, detail, "${it.totalSec / 60}", it)
+        }
         val d = resources.displayMetrics.density
-        for ((id, title, detail) in items) {
-            val on = id == (if (IntervalPlan.byId(cur) == null) 0 else cur)
+        fun px(v: Float) = (v * d).toInt()
+        for (it in items) {
+            val on = it.id == cur
+            val ink = if (on) 0xFF0E141A.toInt() else 0xFFF4F7F9.toInt()
+            val sub = if (on) 0xFF3A4855.toInt() else 0xFFC9D2D9.toInt()
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding((16 * d).toInt(), (13 * d).toInt(), (16 * d).toInt(), (13 * d).toInt())
+                setPadding(px(16f), px(14f), px(16f), px(14f))
                 isClickable = true; isFocusable = true
-                contentDescription = "$title, $detail" + if (on) ", 선택됨" else ""
+                contentDescription = "${it.title}, ${it.detail}, ${it.min}분" + if (on) ", 선택됨" else ""
             }
-            card.addView(TextView(this).apply {
-                text = if (on) "✓  $title" else title
-                textSize = 16f; paint.isFakeBoldText = true
-                setTextColor(if (on) getColor(R.color.walk) else getColor(R.color.ink))
+            // 윗줄: 이름·구성 | 큰 시간 | (고르면) 청록 체크
+            val top = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER_VERTICAL }
+            val left = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            left.addView(TextView(this).apply { text = it.title; textSize = 16f; paint.isFakeBoldText = true; setTextColor(ink) })
+            left.addView(TextView(this).apply { text = it.detail; textSize = 12f; setTextColor(sub); setPadding(0, px(2f), 0, 0) })
+            top.addView(left, LinearLayout.LayoutParams(0, -2, 1f))
+            top.addView(TextView(this).apply {
+                val sb = android.text.SpannableStringBuilder(it.min)
+                if (it.min != "∞") { val st = sb.length; sb.append("분"); sb.setSpan(android.text.style.RelativeSizeSpan(0.5f), st, sb.length, 0) }
+                text = sb; textSize = 26f; paint.isFakeBoldText = true; fontFeatureSettings = "tnum"; setTextColor(ink)
             })
-            card.addView(TextView(this).apply {
-                text = detail; textSize = 13f; setTextColor(0xB3FFFFFF.toInt()); setPadding(0, (2 * d).toInt(), 0, 0)
-            })
-            Glass.apply(card, if (on) GlassKind.SELECTED else GlassKind.PANEL, true)
+            if (on) top.addView(TextView(this).apply {
+                text = "✓"; textSize = 14f; paint.isFakeBoldText = true; setTextColor(0xFFFFFFFF.toInt()); gravity = android.view.Gravity.CENTER
+                background = android.graphics.drawable.GradientDrawable().apply { cornerRadius = 6 * d; setColor(0xFF0E8F82.toInt()) }
+            }, LinearLayout.LayoutParams(px(24f), px(24f)).apply { marginStart = px(10f) })
+            card.addView(top)
+            // 아랫줄: 구성 띠(뛰기 진하게 · 걷기 옅게, 같은 색의 진하기 차이)
+            val runC = if (on) 0xD90E141A.toInt() else 0xEBFFFFFF.toInt()
+            val walkC = if (on) 0x380E141A else 0x47FFFFFF
+            val band = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            fun seg(sec: Int, c: Int) {
+                band.addView(View(this).apply { background = android.graphics.drawable.GradientDrawable().apply { cornerRadius = 2 * d; setColor(c) } },
+                    LinearLayout.LayoutParams(0, -1, sec.toFloat()).apply { marginEnd = px(2f) })
+            }
+            val pl = it.plan
+            if (pl == null) seg(1, runC) else {
+                if (pl.warmupSec > 0) seg(pl.warmupSec, walkC)
+                repeat(pl.reps) { seg(pl.runSec, runC); if (pl.walkSec > 0) seg(pl.walkSec, walkC) }
+            }
+            card.addView(band, LinearLayout.LayoutParams(-1, px(6f)).apply { topMargin = px(10f) })
+            Glass.apply(card, if (on) GlassKind.ON else GlassKind.PANEL, true)
+            val id = it.id
             card.setOnClickListener { Prefs.setInterval(this, id); renderPlans() }
-            box.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = (8 * d).toInt() })
+            box.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = px(8f) })
         }
     }
 

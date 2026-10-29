@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     private val listener = RunRecorder.Listener { render(it) }
 
     private val prep = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        if (r.resultCode == RESULT_OK) startRecording()
+        if (r.resultCode == RESULT_OK) beginCountdown()
     }
 
     private val askPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         // 달리는 중 첫 화면으로 나왔으면 같은 자리가 「달리는 중」 막대 → 누르면 달리기 화면으로
         findViewById<View>(R.id.btnStart).setOnClickListener {
             if (RunRecorder.recording) { homeWhileRunning = false; render(RunRecorder.snapshot()) }
-            else prep.launch(Intent(this, PrepActivity::class.java))
+            else prep.launch(Intent(this, PrepActivity::class.java).putExtra(PrepActivity.EXTRA_BG, shownBg))
         }
         findViewById<View>(R.id.btnPause).setOnClickListener {
             val s = RunRecorder.snapshot()
@@ -156,6 +156,7 @@ class MainActivity : AppCompatActivity() {
         // 뒤로가기로 바로 꺼지지 않게 한 번 묻기. 기록 중이면 닫아도 기록은 알림과 함께 계속됨
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                if (preRun) { cancelCountdown(); return }
                 // 달리기 화면에서 뒤로가기 → 앱은 닫지 않고 첫 화면으로(기록은 계속, 아래 막대로 돌아옴)
                 if (runPanel.visibility == View.VISIBLE) { homeWhileRunning = true; render(RunRecorder.snapshot()); return }
                 val recording = RunRecorder.recording
@@ -178,6 +179,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (shownBg != 0) io.github.sby1234ai.runmate.ui.Backdrop.set(resources, shownBg, findViewById(R.id.bgPhoto))
         // 잠금 화면 위에 띄우려고 올린 알림은 화면이 보이면 지웁니다
         getSystemService(android.app.NotificationManager::class.java).cancel(RecordingService.LOCK_NOTIF_ID)
     }
@@ -296,7 +298,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun applyBackground() {
         val base = when {
-            running -> if (currentNight) "bg_run_night" else "bg_run_day"
+            running || preRun -> if (currentNight) "bg_run_night" else "bg_run_day"
             currentNight -> "bg_night"
             else -> when (currentSky) {
                 Sky.CLEAR, Sky.PARTLY -> "bg_clear"
@@ -468,6 +470,47 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** 준비 화면에서 「시작」 → 달리기 화면 배경만 띄우고 3·2·1 → 기록 시작. 뒤로가기면 취소 */
+    private var preRun = false
+    private val countHandler = Handler(Looper.getMainLooper())
+
+    private fun beginCountdown() {
+        preRun = true
+        home.visibility = View.GONE; runPanel.visibility = View.GONE
+        sky.dim = true
+        applyBackground()
+        val t = findViewById<TextView>(R.id.countdown)
+        t.visibility = View.VISIBLE
+        var n = 3
+        val tick = object : Runnable {
+            override fun run() {
+                if (!preRun || isFinishing) return
+                if (n == 0) {
+                    preRun = false
+                    t.animate().alpha(0f).setDuration(180).withEndAction { t.visibility = View.GONE; t.alpha = 1f }.start()
+                    startRecording()
+                    render(RunRecorder.snapshot())
+                    return
+                }
+                t.text = n.toString()
+                t.scaleX = 1.35f; t.scaleY = 1.35f; t.alpha = 0f
+                t.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(380).start()
+                t.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+                n--
+                countHandler.postDelayed(this, 1000)
+            }
+        }
+        countHandler.post(tick)
+    }
+
+    private fun cancelCountdown() {
+        preRun = false
+        countHandler.removeCallbacksAndMessages(null)
+        findViewById<View>(R.id.countdown).visibility = View.GONE
+        applyBackground()
+        render(RunRecorder.snapshot())
+    }
+
     /** 첫 화면 맨 아래 버튼: 평소엔 「달리기 시작」, 달리는 중엔 「달리는 중 12:34 · 2.31 km」 */
     private fun renderMiniBar(s: RunRecorder.Snapshot) {
         val label = findViewById<TextView>(R.id.startLabel)
@@ -496,8 +539,8 @@ class MainActivity : AppCompatActivity() {
     private fun render(s: RunRecorder.Snapshot) {
         if (!s.recording) homeWhileRunning = false
         val showRun = s.recording && !homeWhileRunning
-        home.visibility = if (showRun) View.GONE else View.VISIBLE
-        runPanel.visibility = if (showRun) View.VISIBLE else View.GONE
+        home.visibility = if (showRun || preRun) View.GONE else View.VISIBLE
+        runPanel.visibility = if (showRun && !preRun) View.VISIBLE else View.GONE
         renderMiniBar(s)
         sky.dim = s.recording
         io.github.sby1234ai.runmate.ui.Backdrop.dim = s.recording

@@ -2,6 +2,11 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg">
 
+    <!-- 첫 화면과 같은 사진을 흐리고 어둡게 깔아, 카드 유리판 뒤로 비치게 -->
+    <ImageView android:id="@+id/prepBg" android:tag="bgBlur" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:scaleType="centerCrop" android:importantForAccessibility="no" />
+    <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="#8C060A0E" />
+
     <ScrollView android:id="@+id/prepScroll" android:tag="fg" android:layout_width="match_parent" android:layout_height="match_parent"
         android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -14,6 +19,8 @@
                 android:layout_marginTop="20dp" android:text="운동 고르기" />
             <LinearLayout android:id="@+id/plans" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:layout_marginTop="8dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp"
+                android:text="▬ 뛰기    ▭ 걷기  (띠 길이 = 시간)" android:textSize="11sp" android:textColor="#B3FFFFFF" />
 
             <TextView style="@style/Label" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_marginTop="20dp" android:text="달리는 동안" />

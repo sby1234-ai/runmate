@@ -250,4 +250,9 @@
                 android:text="실수로 끝나지 않게, 운동 종료는 길게 누르세요" android:textSize="13sp" android:textColor="#B3FFFFFF" />
         </LinearLayout>
     </ScrollView>
+    <!-- 시작 전 3·2·1: 달리기 화면 배경만 보이게 하고 숫자만 크게 -->
+    <TextView android:id="@+id/countdown" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:gravity="center" android:visibility="gone" android:clickable="true"
+        android:textSize="132sp" android:textStyle="bold" android:textColor="#FFFFFFFF" android:fontFeatureSettings="tnum"
+        android:shadowColor="#80000000" android:shadowRadius="24" />
 </FrameLayout>
