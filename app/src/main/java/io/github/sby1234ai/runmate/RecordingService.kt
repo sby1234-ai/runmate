@@ -14,6 +14,10 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.PowerManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -112,6 +116,7 @@ class RecordingService : Service() {
         val autoPause = Prefs.autoPause(this)
         RunRecorder.start(System.currentTimeMillis(), plan, autoPause)
         acquireWakeLock()
+        startSteps()
         if (Prefs.voice(this)) {
             voice = Voice(this)
             coach = Coach(plan, autoPause)
@@ -175,8 +180,25 @@ class RecordingService : Service() {
         wakeLock = null
     }
 
+    // 걸음 센서: 하드웨어 걸음 계수기(TYPE_STEP_COUNTER). 권한(신체 활동)이 없거나 센서가 없으면 걸음 수 없이 기록합니다
+    private val stepListener = object : SensorEventListener {
+        override fun onSensorChanged(e: SensorEvent) { RunRecorder.onSteps(e.values[0]) }
+        override fun onAccuracyChanged(s: Sensor?, a: Int) {}
+    }
+
+    private fun startSteps() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) return
+        val sm = getSystemService(SensorManager::class.java)
+        val sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) ?: return
+        sm.registerListener(stepListener, sensor, SensorManager.SENSOR_DELAY_UI, 0)   // 모아 두지 말고 바로 알려 달라(0)
+    }
+
+    private fun stopSteps() { getSystemService(SensorManager::class.java).unregisterListener(stepListener) }
+
     private fun finish() {
         releaseWakeLock()
+        stopSteps()
         fused.removeLocationUpdates(callback)
         ticker.removeCallbacks(tick)
         voice?.shutdown(); voice = null; coach = null
@@ -194,6 +216,7 @@ class RecordingService : Service() {
 
     override fun onDestroy() {
         releaseWakeLock()
+        stopSteps()
         fused.removeLocationUpdates(callback)
         ticker.removeCallbacks(tick)
         voice?.shutdown(); voice = null
@@ -255,10 +278,26 @@ class RecordingService : Service() {
             s.motion == io.github.sby1234ai.runmate.logic.Motion.WALK -> "걷는 중"
             else -> "멈춤"
         }
-        v.setTextViewText(R.id.nState, state)
+        val lap = io.github.sby1234ai.runmate.logic.Lap.of(s.stats, active)
+        v.setTextViewText(R.id.nState, if (layout == R.layout.notif_run_small && s.recording) "${lap.number}km째 · $state" else state)
         if (layout == R.layout.notif_run_big) {
             v.setTextViewText(R.id.nPace, Format.pace(s.stats.paceSecPerKm))
             v.setTextViewText(R.id.nRun, Format.km(s.stats.runDistance))
+            val extra = buildList {
+                add("${lap.number}km째 ${Format.pace(lap.paceSecPerKm)}")
+                if (s.steps > 0) add(String.format(java.util.Locale.KOREA, "%,d걸음", s.steps))
+                s.cadence?.takeIf { it > 0 }?.let { add("분당 ${it}걸음") }
+                s.plan?.let { p ->
+                    val ph = p.phaseAt(active / 1000)
+                    add(when (ph.kind) {
+                        io.github.sby1234ai.runmate.logic.IntervalPlan.Kind.WARMUP -> "준비 걷기"
+                        io.github.sby1234ai.runmate.logic.IntervalPlan.Kind.RUN -> "인터벌 ${ph.rep}/${p.reps} 뛰기"
+                        io.github.sby1234ai.runmate.logic.IntervalPlan.Kind.WALK -> "인터벌 ${ph.rep}/${p.reps} 걷기"
+                        io.github.sby1234ai.runmate.logic.IntervalPlan.Kind.DONE -> "인터벌 완료"
+                    })
+                }
+            }
+            v.setTextViewText(R.id.nExtra, extra.joinToString("  ·  "))
             v.setInt(R.id.nState, "setBackgroundResource", when (state) {
                 "뛰는 중" -> R.drawable.bg_notif_chip
                 "걷는 중" -> R.drawable.bg_notif_chip_walk

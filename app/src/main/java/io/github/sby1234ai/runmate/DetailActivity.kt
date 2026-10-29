@@ -83,6 +83,11 @@ class DetailActivity : AppCompatActivity() {
         cell("뛰기 페이스", Format.pace(s.runPaceSecPerKm), R.color.run)
         cell("걸은 거리", "${Format.km(s.walkDistance)} km", R.color.walk)
         cell("걸은 시간", Format.duration(s.walkTime), R.color.walk)
+        if (r.steps > 0) {
+            cell("걸음 수", String.format(Locale.KOREA, "%,d", r.steps))
+            val minutes = s.moving / 60_000.0
+            cell("평균 분당 걸음", if (minutes >= 1) "${(r.steps / minutes).toInt()}" else "-")
+        }
 
         renderSplits(s)
         findBadges(r)

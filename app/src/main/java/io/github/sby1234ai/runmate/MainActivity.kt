@@ -338,6 +338,12 @@ class MainActivity : AppCompatActivity() {
     // ───────── 달리는 중 화면 ─────────
 
     private fun renderTime(s: RunRecorder.Snapshot) {
+        // 지금 몇 km째인지와 그 구간 페이스, 걸음 수, 케이던스
+        val lap = io.github.sby1234ai.runmate.logic.Lap.of(s.stats, s.activeNow())
+        findViewById<TextView>(R.id.lapPace).text = Format.pace(lap.paceSecPerKm)
+        findViewById<TextView>(R.id.lapLabel).text = "${lap.number}km째 페이스"
+        findViewById<TextView>(R.id.steps).text = String.format(java.util.Locale.KOREA, "%,d", s.steps)
+        findViewById<TextView>(R.id.cadence).text = s.cadence?.toString() ?: "--"
         timeView.text = android.text.format.DateUtils.formatElapsedTime(s.activeNow() / 1000)
         timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
     }

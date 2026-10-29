@@ -20,4 +20,6 @@ enum class Activity { STILL, WALKING, RUNNING, OTHER }
 data class Run(
     val id: Long,          // 시작 시각(epoch ms)
     val points: List<TrackPoint>,
+    /** 걸음 센서로 센 걸음 수(센서가 없거나 권한이 없으면 0) */
+    val steps: Int = 0,
 )

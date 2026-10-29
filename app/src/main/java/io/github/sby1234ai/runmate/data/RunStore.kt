@@ -21,7 +21,7 @@ object RunStore {
                 if (p.breakBefore) put(1)
             })
         }
-        val json = JSONObject().put("version", 1).put("id", run.id).put("points", arr)
+        val json = JSONObject().put("version", 1).put("id", run.id).put("steps", run.steps).put("points", arr)
         val tmp = File(dir(ctx), "${run.id}.json.tmp")
         tmp.writeText(json.toString())
         tmp.renameTo(File(dir(ctx), "${run.id}.json"))
@@ -49,7 +49,7 @@ object RunStore {
                     breakBefore = a.length() > 6 && a.optInt(6, 0) == 1,
                 ))
             }
-            Run(o.getLong("id"), pts)
+            Run(o.getLong("id"), pts, o.optInt("steps", 0))
         } catch (e: Exception) {
             null
         }

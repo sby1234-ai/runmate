@@ -13,6 +13,7 @@ import io.github.sby1234ai.runmate.logic.PauseTracker
 import io.github.sby1234ai.runmate.logic.Run
 import io.github.sby1234ai.runmate.logic.RunStats
 import io.github.sby1234ai.runmate.logic.Stats
+import io.github.sby1234ai.runmate.logic.StepTracker
 import io.github.sby1234ai.runmate.logic.TrackPoint
 
 /** 지금 진행 중인 기록 한 개를 들고 있는 곳. 기록 서비스가 채우고 화면이 읽습니다. */
@@ -35,6 +36,9 @@ object RunRecorder {
         val endElapsed: Long?,
         /** 멈춘 이유가 「일시정지」 버튼이면 true, 자동이면 false (멈춰 있지 않으면 의미 없음) */
         val pausedByUser: Boolean,
+        /** 이번 기록의 걸음 수와 지금 케이던스(분당 걸음, 모르면 null) */
+        val steps: Int,
+        val cadence: Int?,
     ) {
         /** 멈춘 상태(자동이든 버튼이든 하나로 셈) */
         val paused: Boolean get() = pausedAt != null
@@ -67,6 +71,7 @@ object RunRecorder {
     private var endElapsed: Long? = null
     private var demoMotion: Motion? = null
     private var breakNext = false
+    private var stepper = StepTracker()
 
     @Volatile var recording = false; private set
     var startedAt = 0L; private set
@@ -78,7 +83,7 @@ object RunRecorder {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
             pause = PauseTracker(autoEnabled = autoPause); this.plan = plan; endedAt = null; demoMotion = null
-            breakNext = false
+            breakNext = false; stepper = StepTracker()
             startedAt = now; startElapsed = SystemClock.elapsedRealtime(); endElapsed = null; recording = true
         }
         notifyListeners()
@@ -113,6 +118,16 @@ object RunRecorder {
         notifyListeners()
     }
 
+    /** 걸음 센서 값(기기를 켠 뒤 누적). 일시정지 중 걸음은 넣지 않고, 케이던스를 걷기·뛰기 판단에 넘깁니다. */
+    fun onSteps(cumulative: Float) {
+        if (!recording) return
+        synchronized(this) {
+            val nowE = SystemClock.elapsedRealtime()
+            stepper.onSensor(cumulative, nowE, counting = !pause.manual)
+            classifier.onCadence(stepper.cadence(nowE), System.currentTimeMillis())
+        }
+    }
+
     fun onActivity(a: Activity, now: Long) {
         synchronized(this) { classifier.onActivity(a, now) }
     }
@@ -123,7 +138,7 @@ object RunRecorder {
             recording = false
             endedAt = System.currentTimeMillis()
             endElapsed = SystemClock.elapsedRealtime()
-            if (points.size >= 2) Run(startedAt, ArrayList(points)) else null
+            if (points.size >= 2) Run(startedAt, ArrayList(points), stepper.total) else null
         }
         notifyListeners()
         return run
@@ -133,7 +148,8 @@ object RunRecorder {
 
     fun snapshot(): Snapshot = synchronized(this) {
         Snapshot(recording, startedAt, stats, demoMotion ?: points.lastOrNull()?.motion ?: classifier.current, lastAccuracy, usingActivityRecognition, savedRunId,
-            plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt, startElapsed, endElapsed, pause.manual)
+            plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt, startElapsed, endElapsed, pause.manual,
+            stepper.total, stepper.cadence(SystemClock.elapsedRealtime()))
     }
 
     /**

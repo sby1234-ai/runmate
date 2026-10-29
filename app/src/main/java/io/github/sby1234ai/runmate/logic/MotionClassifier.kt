@@ -18,6 +18,11 @@ class MotionClassifier(
     private var lastActivityAt: Long = Long.MIN_VALUE
     var current: Motion = Motion.STILL
         private set
+    private var cadence: Int? = null
+    private var cadenceAt: Long = Long.MIN_VALUE
+
+    /** 걸음 센서의 케이던스(분당 걸음). 걷기는 보통 100~125, 달리기는 150~180. */
+    fun onCadence(spm: Int?, timeMs: Long) { cadence = spm; cadenceAt = timeMs }
 
     fun onActivity(activity: Activity, timeMs: Long) {
         lastActivity = activity
@@ -37,13 +42,25 @@ class MotionClassifier(
         }
         val median = median()
         val act = lastActivity?.takeIf { timeMs - lastActivityAt <= activityTtlMs }
-        current = when (act) {
+        val cad = cadence?.takeIf { timeMs - cadenceAt <= 15_000 }
+        val fast = median != null && median >= runSpeed + 0.3
+        current = when {
+            act == Activity.RUNNING -> Motion.RUN
+            // 걸음 센서가 있으면 보폭 빠르기로 먼저 판단: 분당 140걸음 이상이면 뛰기, 60 이상이면 걷기(속도가 분명히 빠르면 뛰기)
+            cad != null && cad >= RUN_CADENCE -> Motion.RUN
+            cad != null && cad >= 60 -> if (fast) Motion.RUN else Motion.WALK
+            else -> byActivity(act, median)
+        }
+        return current
+    }
+
+    private fun byActivity(act: Activity?, median: Double?): Motion {
+        return when (act) {
             Activity.RUNNING -> Motion.RUN
             Activity.WALKING -> if (median != null && median >= runSpeed + 0.3) Motion.RUN else Motion.WALK
             Activity.STILL -> if (median != null && median >= runSpeed + 0.3) Motion.RUN else Motion.STILL
             else -> bySpeed(median)
         }
-        return current
     }
 
     private fun bySpeed(median: Double?): Motion {
@@ -75,6 +92,8 @@ class MotionClassifier(
     }
 
     companion object {
+        /** 이 이상 분당 걸음이면 뛰기 */
+        const val RUN_CADENCE = 140
         /**
          * GPS가 알려 준 속도와 위치 변화로 계산한 속도 중 무엇을 쓸지.
          * 어떤 휴대폰·상황에서는 실제로 움직이는데도 GPS 속도가 0으로 오므로,

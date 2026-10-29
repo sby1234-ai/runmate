@@ -34,4 +34,7 @@
                 android:text="뛴 거리 km" android:textSize="11sp" android:textColor="#B3FFFFFF" />
         </LinearLayout>
     </LinearLayout>
+    <TextView android:id="@+id/nExtra" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" android:maxLines="1" android:ellipsize="end"
+        android:textSize="13sp" android:textColor="#E6FFFFFF" android:fontFeatureSettings="tnum" />
 </LinearLayout>

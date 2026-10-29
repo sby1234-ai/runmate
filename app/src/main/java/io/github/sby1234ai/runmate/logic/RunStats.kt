@@ -54,3 +54,16 @@ object RunStats {
         return Stats(dist, points.last().time - points.first().time, moving, runD, runT, walkD, walkT, splits)
     }
 }
+
+/** 지금 몇 km째를 달리는지와 그 구간의 페이스(삼성 헬스의 "N km째"처럼). */
+data class Lap(val number: Int, val meters: Double, val paceSecPerKm: Double?) {
+    companion object {
+        fun of(stats: Stats, activeMs: Long): Lap {
+            val n = stats.splits.size + 1
+            val meters = (stats.distance - stats.splits.size * 1000.0).coerceAtLeast(0.0)
+            val lapMs = (activeMs - stats.splits.sum()).coerceAtLeast(0)
+            val pace = if (meters < 50) null else lapMs / 1000.0 / (meters / 1000.0)
+            return Lap(n, meters, pace)
+        }
+    }
+}
