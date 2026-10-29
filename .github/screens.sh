@@ -7,6 +7,11 @@ for perm in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION ACTIVITY_RECOGNITION POS
   adb shell pm grant $P android.permission.$perm || true
 done
 adb shell settings put system screen_off_timeout 1800000
+# 막 켜진 에뮬레이터에서 「Pixel Launcher isn't responding」 같은 시스템 오류 창이 캡처를 가리지 않게
+adb shell settings put global hide_error_dialogs 1 || true
+adb shell settings put global anr_show_background 0 || true
+sleep 20
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true   # 이미 떠 있는 창 닫기(알림창을 찍는 뒤쪽 점검과 겹치지 않게 처음 한 번만)
 mkdir -p shots
 shot() { sleep "$2"; adb exec-out screencap -p > "shots/$1.png"; }
 go() { adb shell am start -S -W -n $P/.MainActivity "$@" >/dev/null; }
