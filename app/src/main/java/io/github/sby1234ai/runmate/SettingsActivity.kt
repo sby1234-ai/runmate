@@ -60,7 +60,6 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.btnCheckUpdate).setOnClickListener { Updater.check(this, quiet = false) }
 
         findViewById<MaterialButton>(R.id.btnLive).setOnClickListener { LiveNotif.openSettings(this) }
-        findViewById<MaterialButton>(R.id.btnNotifSettings).setOnClickListener { LiveNotif.openAppNotificationSettings(this) }
 
         findViewById<MaterialButton>(R.id.btnTestVoice).setOnClickListener {
             val v = preview ?: Voice(this).also { preview = it }
@@ -76,27 +75,14 @@ class SettingsActivity : AppCompatActivity() {
         about.append("런메이트 ${BuildConfig.VERSION_NAME}\n지도 데이터 © OpenStreetMap 기여자 (ODbL). 지도 그림은 OpenStreetMap 재단 서버에서 받아 옵니다.\n날씨 정보: Open-Meteo.com (CC BY 4.0)\n소스: github.com/sby1234-ai/runmate")
     }
 
-    // 실시간 알림 설정을 바꾸고 돌아오면 상태 글을 바로 고침
+    // 실시간 알림을 켤 수 있는 휴대폰에서 꺼져 있을 때만 안내 카드를 보여 줌(설정에서 켜고 돌아오면 바로 숨김)
     override fun onResume() {
         super.onResume()
-        val btn = findViewById<MaterialButton>(R.id.btnLive)
-        btn.visibility = android.view.View.VISIBLE
-        findViewById<TextView>(R.id.liveState).text = when {
-            LiveNotif.waitingForUpdate() ->
-                ("이 휴대폰의 안드로이드 16.0에서는 실시간 알림이 아직 다른 앱에 열려 있지 않아 상태 표시줄 초록 칩을 쓸 수 없습니다. " +
-                    "휴대폰 소프트웨어 업데이트로 안드로이드 16 분기 업데이트(SDK 36.1) 이상이 되면 따로 설정하지 않아도 칩이 자동으로 나옵니다. " +
-                    "갤럭시의 나우 바(잠금 화면 아래쪽 막대)는 삼성이 등록한 앱만 들어갈 수 있어(설정 → 잠금화면 및 AOD → Now bar → 실시간 정보 목록), 지금은 런메이트가 그 목록에 없습니다. " +
-                    "그 대신 달리는 중 시간·거리를 알림 카드로 보여 줍니다. 잠금 화면에서 카드가 안 보이면 설정 → 잠금화면 및 AOD → 잠금화면 알림 → 알림 스타일을 「카드」로 바꿔 주세요.")
-                    .also { btn.visibility = android.view.View.GONE }
-            !LiveNotif.supported() ->
-                "안드로이드 16 이상에서만 쓸 수 있습니다. 이 휴대폰에서는 달리는 중 시간·거리를 알림 카드로 보여 줍니다."
-                    .also { btn.visibility = android.view.View.GONE }
-            LiveNotif.allowed(this) ->
-                "켜짐: 달리는 중 거리·시간이 상태 표시줄 초록 칩에 나옵니다. 갤럭시의 나우 바(잠금 화면 아래쪽 막대)는 삼성이 등록한 앱만 들어갈 수 있어(설정 → 잠금화면 및 AOD → Now bar → 실시간 정보 목록), 지금은 런메이트가 그 목록에 없습니다."
-            else ->
-                "꺼짐: 아래 버튼으로 런메이트의 실시간 알림을 켜면 달리는 중 거리·시간이 상태 표시줄 초록 칩에 나옵니다."
-        }
-        btn.text = if (LiveNotif.allowed(this)) "실시간 알림 설정 열기" else "실시간 알림 켜기"
+        findViewById<android.view.View>(R.id.liveCard).visibility =
+            if (LiveNotif.supported() && !LiveNotif.allowed(this)) android.view.View.VISIBLE else android.view.View.GONE
+        findViewById<TextView>(R.id.liveState).text =
+            "꺼짐: 아래 버튼으로 런메이트의 실시간 알림을 켜면 달리는 중 거리·시간이 상태 표시줄 초록 칩에 나옵니다."
+        findViewById<MaterialButton>(R.id.btnLive).text = "실시간 알림 켜기"
     }
 
     private fun renderStorage() {

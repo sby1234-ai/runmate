@@ -64,20 +64,18 @@
                 android:text="잠금 화면 표시 권한 켜기" android:textColor="@color/ink" />
         </LinearLayout>
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        <!-- 실시간 알림(상태 표시줄 칩)을 켤 수 있는 휴대폰(안드로이드 16 분기 업데이트 이상)에서 꺼져 있을 때만 보임 -->
+        <LinearLayout android:id="@+id/liveCard" android:visibility="gone"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="실시간 알림 (초록 칩·나우 바)" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+                android:text="실시간 알림 (초록 칩)" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
             <TextView android:id="@+id/liveState" style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:lineSpacingExtra="3dp" />
             <com.google.android.material.button.MaterialButton android:id="@+id/btnLive"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
                 android:text="실시간 알림 설정 열기" android:textColor="@color/ink" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/btnNotifSettings"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp"
-                android:text="잠금 화면 알림 내용 설정" android:textColor="@color/ink" />
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"

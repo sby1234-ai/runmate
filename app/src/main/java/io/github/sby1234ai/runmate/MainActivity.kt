@@ -119,6 +119,21 @@ class MainActivity : AppCompatActivity() {
             if (RunRecorder.recording) { RecordingService.stop(this); true } else false
         }
         findViewById<MaterialButton>(R.id.btnBattery).setOnClickListener { requestBatteryExemption() }
+        // 뒤로가기로 바로 꺼지지 않게 한 번 묻기. 기록 중이면 닫아도 기록은 알림과 함께 계속됨
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val recording = RunRecorder.recording
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle("런메이트를 닫을까요?")
+                    .setMessage(
+                        if (recording) "화면만 닫히고 기록은 계속됩니다. 알림에서 시간·거리를 보고 일시정지·종료할 수 있습니다."
+                        else null,
+                    )
+                    .setPositiveButton("닫기") { _, _ -> if (recording) moveTaskToBack(true) else finish() }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+        })
         // 잠금 화면에서 열렸을 때도 바로 잠금 위에 보이도록, 기록 중이면 첫 화면을 그리기 전에 설정
         if (RunRecorder.recording && Prefs.lockScreen(this)) showOnLockScreen(true)
         handleDemo(intent)
