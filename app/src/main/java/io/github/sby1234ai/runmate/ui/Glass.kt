@@ -182,45 +182,66 @@ class GlassDrawable(private val host: View?, private val kind: GlassKind, densit
 }
 
 /**
- * 대화상자를 유리 판으로(시안 확정): 각진 판 + 빛 테두리, 뒤 화면은 흐리게(안드로이드 12 이상),
- * 버튼은 반반 나눈 두 개 — 보조(취소 등)는 유리 버튼, 주(닫기 등)는 청록 버튼.
+ * 대화상자를 유리 판으로(시안 확정): 각진 판 + 빛 테두리, 반반 나눈 버튼 — 보조(취소 등)는 유리, 주(닫기 등)는 청록.
+ * 뜨는 동안에는 뒤 화면의 글자·타일·버튼을 숨기고 배경 사진만 흐리게 남깁니다(휴대폰이 창 뒤 흐림을 꺼 둔 경우도 같게).
+ * 숨길 뷰는 android:tag="fg", 흐리게 할 배경은 android:tag="bgBlur". 표시가 없는 화면은 내용 전체를 숨김.
  */
 fun com.google.android.material.dialog.MaterialAlertDialogBuilder.showGlass(): androidx.appcompat.app.AlertDialog {
     val dlg = create()
     val ctx = context
     val density = ctx.resources.displayMetrics.density
+    fun dp(v: Float) = (v * density).toInt()
     dlg.window?.let { w ->
         w.setBackgroundDrawable(android.graphics.drawable.InsetDrawable(
-            GlassDrawable(null, GlassKind.SHEET, density), (20 * density).toInt(), (80 * density).toInt(), (20 * density).toInt(), (80 * density).toInt()))
-        if (android.os.Build.VERSION.SDK_INT >= 31) {
-            w.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            w.attributes = w.attributes.apply { blurBehindRadius = (24 * density).toInt() }
-        }
-        w.setDimAmount(0.45f)
+            GlassDrawable(null, GlassKind.SHEET, density), dp(22f), dp(60f), dp(22f), dp(60f)))
+        w.setDimAmount(0.25f)
+    }
+    // 뒤 화면: 앞의 내용은 숨기고 배경만 흐리게
+    val act = generateSequence(ctx) { (it as? android.content.ContextWrapper)?.baseContext }.filterIsInstance<android.app.Activity>().firstOrNull()
+    val root = act?.findViewById<android.view.ViewGroup>(android.R.id.content)
+    val fg = mutableListOf<View>(); val blurs = mutableListOf<View>()
+    fun walk(v: View) {
+        when (v.tag) { "fg" -> fg.add(v); "bgBlur" -> blurs.add(v) }
+        if (v is android.view.ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
+    }
+    root?.let { walk(it) }
+    if (fg.isEmpty()) root?.getChildAt(0)?.let { fg.add(it) }
+    val hidden = fg.filter { it.visibility == View.VISIBLE }
+    dlg.setOnDismissListener {
+        hidden.forEach { it.animate().alpha(1f).setDuration(160).start() }
+        if (android.os.Build.VERSION.SDK_INT >= 31) blurs.forEach { it.setRenderEffect(null) }
     }
     dlg.setOnShowListener {
+        hidden.forEach { it.animate().alpha(0f).setDuration(160).start() }
+        if (android.os.Build.VERSION.SDK_INT >= 31) blurs.forEach {
+            it.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(dp(18f).toFloat(), dp(18f).toFloat(), Shader.TileMode.CLAMP))
+        }
         try {
+            // 여백·글자 크기: 넉넉하게
+            dlg.findViewById<View>(androidx.appcompat.R.id.parentPanel)?.setPadding(dp(4f), dp(14f), dp(4f), dp(6f))
+            dlg.findViewById<android.widget.TextView>(androidx.appcompat.R.id.alertTitle)?.apply { textSize = 20f; setLineSpacing(0f, 1.15f) }
+            dlg.findViewById<android.widget.TextView>(android.R.id.message)?.apply { textSize = 15f; setLineSpacing(dp(3f).toFloat(), 1f); setTextColor(0xFFDDE5EA.toInt()) }
             val pos = dlg.getButton(android.content.DialogInterface.BUTTON_POSITIVE)
             val neg = dlg.getButton(android.content.DialogInterface.BUTTON_NEGATIVE)
             val neu = dlg.getButton(android.content.DialogInterface.BUTTON_NEUTRAL)
             val shown = listOfNotNull(neu, neg, pos).filter { it.visibility == View.VISIBLE && it.text.isNotEmpty() }
             if (shown.isEmpty()) return@setOnShowListener
             val bar = pos.parent as? android.widget.LinearLayout
-            if (bar != null && bar.orientation == android.widget.LinearLayout.HORIZONTAL) {
-                // 버튼 사이 빈칸을 없애고 버튼을 같은 너비로
-                for (i in 0 until bar.childCount) { val c = bar.getChildAt(i); if (c !is android.widget.Button) c.visibility = View.GONE }
-                bar.setPadding((20 * density).toInt(), 0, (20 * density).toInt(), (18 * density).toInt())
+            val row = bar != null && bar.orientation == android.widget.LinearLayout.HORIZONTAL
+            if (bar != null) {
+                if (row) for (i in 0 until bar.childCount) { val c = bar.getChildAt(i); if (c !is android.widget.Button) c.visibility = View.GONE }
+                bar.setPadding(dp(19f), dp(22f), dp(19f), dp(20f))
             }
-            val h = (50 * density).toInt()
             for (b in shown) {
                 (b.layoutParams as? android.widget.LinearLayout.LayoutParams)?.let { lp ->
-                    if (bar?.orientation == android.widget.LinearLayout.HORIZONTAL) { lp.width = 0; lp.weight = 1f }
-                    lp.height = h; lp.marginStart = (5 * density).toInt(); lp.marginEnd = (5 * density).toInt()
+                    if (row) { lp.width = 0; lp.weight = 1f }
+                    lp.height = dp(52f); lp.marginStart = dp(5f); lp.marginEnd = dp(5f); lp.topMargin = 0; lp.bottomMargin = 0
                     b.layoutParams = lp
                 }
                 b.isAllCaps = false
                 b.textSize = 16f
-                if (b is com.google.android.material.button.MaterialButton) { b.backgroundTintList = null; b.rippleColor = null; b.strokeWidth = 0 }
+                b.minHeight = 0; b.minimumHeight = 0
+                if (b is com.google.android.material.button.MaterialButton) { b.backgroundTintList = null; b.rippleColor = null; b.strokeWidth = 0; b.insetTop = 0; b.insetBottom = 0 }
                 if (b === pos) {
                     val bg = android.graphics.drawable.GradientDrawable().apply { cornerRadius = 12 * density; setColor(0xFF1FB3A2.toInt()) }
                     b.background = RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), bg, null)

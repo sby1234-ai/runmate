@@ -4,14 +4,14 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
 
     <!-- 날씨 사진(res/drawable-nodpi/bg_*.jpg 이 있으면 씀). 없으면 SkyView가 그라데이션 하늘을 그립니다 -->
-    <ImageView android:id="@+id/bgPhoto" android:layout_width="match_parent" android:layout_height="match_parent"
+    <ImageView android:id="@+id/bgPhoto" android:tag="bgBlur" android:layout_width="match_parent" android:layout_height="match_parent"
         android:scaleType="centerCrop" android:importantForAccessibility="no" android:visibility="gone" />
 
     <io.github.sby1234ai.runmate.ui.SkyView android:id="@+id/sky"
         android:layout_width="match_parent" android:layout_height="match_parent" />
 
     <!-- 대기 화면: 날씨, 시작 버튼, 기능 타일 -->
-    <ScrollView android:id="@+id/home" android:clipToPadding="false"
+    <ScrollView android:id="@+id/home" android:tag="fg" android:clipToPadding="false"
         android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="18dp" android:paddingBottom="28dp">
@@ -96,7 +96,7 @@
     </ScrollView>
 
     <!-- 달리는 중 화면 -->
-    <ScrollView android:id="@+id/runPanel" android:visibility="gone" android:clipToPadding="false"
+    <ScrollView android:id="@+id/runPanel" android:tag="fg" android:visibility="gone" android:clipToPadding="false"
         android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:gravity="center_horizontal"
