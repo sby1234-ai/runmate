@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 웨어 OS 워치 전용(갤럭시 워치4 이후, 픽셀 워치 등) -->
+    <uses-feature android:name="android.hardware.type.watch" />
+    <!-- 실시간 심박(워치 센서) -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.RunMateWear">
+
+        <uses-library android:name="com.google.android.wearable" android:required="false" />
+        <!-- 휴대폰 런메이트와 같이 쓰는 앱(위치 기록은 휴대폰이 함) -->
+        <meta-data android:name="com.google.android.wearable.standalone" android:value="false" />
+
+        <activity android:name=".WatchActivity" android:exported="true" android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

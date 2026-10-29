@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">런메이트</string>
+    <color name="bg">#FF0E141A</color>
+    <style name="Theme.RunMateWear" parent="android:Theme.DeviceDefault">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorBackground">@color/bg</item>
+    </style>
+</resources>

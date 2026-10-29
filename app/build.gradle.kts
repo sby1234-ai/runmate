@@ -15,8 +15,8 @@ android {
         applicationId = "io.github.sby1234ai.runmate"
         minSdk = 26
         targetSdk = 36
-        versionCode = 27
-        versionName = "0.4.0"
+        versionCode = 28
+        versionName = "0.5.0"
     }
 
     signingConfigs {
@@ -55,6 +55,8 @@ dependencies {
     // 헬스 커넥트: 워치(삼성 헬스 등)가 넘겨준 심박·운동 기록 읽기
     implementation("androidx.health.connect:connect-client:1.1.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    // 워치 앱(웨어 OS)과 메시지 주고받기
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")   // 단위 테스트에서 진짜 JSON 읽기

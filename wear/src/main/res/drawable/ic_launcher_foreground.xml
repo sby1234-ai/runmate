@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 트랙 한 바퀴(청록 걷기 → 주홍 뛰기) -->
+    <path android:strokeColor="#1B998B" android:strokeWidth="7" android:strokeLineCap="round"
+        android:pathData="M40,72 C30,72 28,62 28,54 C28,44 33,36 44,36" />
+    <path android:strokeColor="#F2542D" android:strokeWidth="7" android:strokeLineCap="round"
+        android:pathData="M44,36 L66,36 C76,36 80,44 80,54 C80,64 75,72 64,72" />
+    <path android:fillColor="#F2542D" android:pathData="M64,72m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>

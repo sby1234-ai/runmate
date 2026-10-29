@@ -175,10 +175,12 @@ class MainActivity : AppCompatActivity() {
         if (RunRecorder.recording && Prefs.lockScreen(this)) showOnLockScreen(true)
         handleDemo(intent)
         handleStop(intent)
+        if (intent?.action == WearSync.ACTION_WATCH_START && !RunRecorder.recording) countHandler.postDelayed({ beginCountdown() }, 400)
     }
 
     override fun onResume() {
         super.onResume()
+        visible = true
         if (shownBg != 0) io.github.sby1234ai.runmate.ui.Backdrop.set(resources, shownBg, findViewById(R.id.bgPhoto))
         // 잠금 화면 위에 띄우려고 올린 알림은 화면이 보이면 지웁니다
         getSystemService(android.app.NotificationManager::class.java).cancel(RecordingService.LOCK_NOTIF_ID)
@@ -186,6 +188,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (intent.action == WearSync.ACTION_WATCH_START && !RunRecorder.recording && !preRun) beginCountdown()
         handleDemo(intent)
         handleStop(intent)
     }
@@ -208,6 +211,8 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "멈췄던 기록을 이어서 합니다", Toast.LENGTH_LONG).show()
         }
     }
+
+    override fun onPause() { visible = false; super.onPause() }
 
     override fun onStop() {
         RunRecorder.removeListener(listener)
@@ -686,5 +691,10 @@ class MainActivity : AppCompatActivity() {
             "pause" -> RecordingService.pause(this, true)
             "resume" -> RecordingService.pause(this, false)
         }
+    }
+
+    companion object {
+        /** 첫 화면이 지금 보이는지(워치 「시작」을 바로 받을 수 있는지) */
+        @Volatile var visible = false
     }
 }

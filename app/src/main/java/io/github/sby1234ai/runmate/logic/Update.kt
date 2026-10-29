@@ -25,8 +25,8 @@ object Update {
         for (i in 0 until assets.length()) {
             val a = assets.getJSONObject(i)
             val name = a.getString("name"); val url = a.getString("browser_download_url")
-            if (name.endsWith(".apk")) apk = url
-            if (name.endsWith(".apk.sha256")) sha = url
+            if (name.endsWith(".apk") && !name.contains("wear")) apk = url   // 워치용 파일은 휴대폰에 받지 않음
+            if (name.endsWith(".apk.sha256") && !name.contains("wear")) sha = url
         }
         if (apk == null) null else Release(o.getString("tag_name").removePrefix("v"), o.optString("body", ""), apk, sha)
     } catch (e: Exception) { null }

@@ -80,7 +80,9 @@ jobs:
         if: success()
         with:
           name: runmate-apk
-          path: app/build/outputs/apk/**/*.apk
+          path: |
+            app/build/outputs/apk/**/*.apk
+            wear/build/outputs/apk/**/*.apk
 
       # 태그를 따로 올리지 않아도, main에 올린 버전(versionName)의 릴리스가 아직 없으면 자동으로 만듭니다.
       - name: 릴리스 만들기 (새 버전일 때)
@@ -97,5 +99,12 @@ jobs:
           { echo "바뀐 점: $(git log -1 --pretty=%s "$GITHUB_SHA")"; echo; cat docs/RELEASE_NOTES.md; } > notes.md
           cp app/build/outputs/apk/release/app-release.apk "runmate-${VER}.apk"
           sha256sum "runmate-${VER}.apk" > "runmate-${VER}.apk.sha256"
-          gh release create "$VER" "runmate-${VER}.apk" "runmate-${VER}.apk.sha256" \
+          # 워치 앱(웨어 OS): 워치에 adb로 설치. 휴대폰 앱의 자동 업데이트가 이 파일을 고르지 않게 이름에 wear, 먼저 올림
+          WEAR=()
+          if [ -f wear/build/outputs/apk/release/wear-release.apk ]; then
+            cp wear/build/outputs/apk/release/wear-release.apk "runmate-wear-${VER}.apk"
+            sha256sum "runmate-wear-${VER}.apk" > "runmate-wear-${VER}.apk.sha256"
+            WEAR=("runmate-wear-${VER}.apk" "runmate-wear-${VER}.apk.sha256")
+          fi
+          gh release create "$VER" "${WEAR[@]}" "runmate-${VER}.apk" "runmate-${VER}.apk.sha256" \
             --target "$GITHUB_SHA" --title "런메이트 ${VER}" --notes-file notes.md

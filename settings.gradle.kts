@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "runmate"
 include(":app")
+include(":wear")

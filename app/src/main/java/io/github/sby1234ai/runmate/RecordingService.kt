@@ -99,6 +99,7 @@ class RecordingService : Service() {
             // 5초마다, 그리고 멈춤↔다시 시작이 바뀌는 순간 바로 알림(잠금 화면 카드)을 고칩니다
             if (now - lastSavedAt >= 10_000) { lastSavedAt = now; saveCheckpoint() }
             if (now - lastNotifAt > 5000 || s.paused != lastPaused) { lastNotifAt = now; lastPaused = s.paused; updateNotification() }
+            WearSync.push(this@RecordingService)   // 워치 앱에 시간·거리
             ticker.postDelayed(this, 1000)
         }
     }
@@ -280,6 +281,7 @@ class RecordingService : Service() {
     }
 
     override fun onDestroy() {
+        WearSync.push(this, true)   // 워치에 「끝남」
         unwatchScreen()
         releaseWakeLock()
         stopSteps()
