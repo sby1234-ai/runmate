@@ -4,6 +4,8 @@ import io.github.sby1234ai.runmate.ui.showGlass
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
@@ -93,6 +95,7 @@ class DetailActivity : AppCompatActivity() {
 
         renderSplits(s)
         findBadges(r)
+        loadHeart()
 
         findViewById<MaterialButton>(R.id.btnShare).setOnClickListener { shareImage() }
         findViewById<MaterialButton>(R.id.btnGpx).setOnClickListener { exportGpx() }
@@ -148,6 +151,49 @@ class DetailActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    // ───── 워치 심박(헬스 커넥트) ─────
+    private val askHealth = registerForActivityResult(
+        androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()) { loadHeart() }
+
+    /** 이 기록 시간대의 워치 심박: 평균·최고, 1km 구간별 평균, 그래프. 권한이 없으면 가져오기 버튼 */
+    private fun loadHeart() {
+        val r = run ?: return
+        val card = findViewById<View>(R.id.heartCard)
+        if (!HealthLink.available(this)) return
+        card.visibility = View.VISIBLE
+        val text = findViewById<TextView>(R.id.heartText)
+        val btn = findViewById<View>(R.id.heartBtn)
+        val chart = findViewById<io.github.sby1234ai.runmate.ui.HeartChart>(R.id.heartChart)
+        btn.setOnClickListener { askHealth.launch(HealthLink.PERMISSIONS) }
+        lifecycleScope.launch {
+            try {
+                if (!HealthLink.granted(this@DetailActivity)) {
+                    text.text = "갤럭시 워치를 차고 달렸다면, 삼성 헬스 → 설정 → 헬스 커넥트에서 심박 공유를 켠 뒤 아래 버튼을 눌러 주세요."
+                    btn.visibility = View.VISIBLE; chart.visibility = View.GONE; return@launch
+                }
+                btn.visibility = View.GONE
+                val end = r.points.lastOrNull()?.time ?: r.id
+                val hr = HealthLink.heart(this@DetailActivity, r.id, end)
+                if (hr.size < 2) { text.text = "이 시간대에 워치 심박 기록이 없습니다. 촘촘한 심박을 남기려면 달릴 때 워치에서도 운동을 시작해 주세요."; chart.visibility = View.GONE; return@launch }
+                val avg = hr.map { it.second }.average().toInt(); val max = hr.maxOf { it.second }
+                // 1km 구간별 평균 심박: 각 km를 지난 시각으로 나눔
+                val marks = mutableListOf<Long>(); var acc = 0.0
+                r.points.zipWithNext().forEach { (a, b) ->
+                    if (!b.breakBefore) acc += io.github.sby1234ai.runmate.logic.Geo.distance(a.lat, a.lon, b.lat, b.lon)
+                    if (acc >= (marks.size + 1) * 1000.0) marks += b.time
+                }
+                val bounds = listOf(r.id) + marks + listOf(end)
+                val perKm = bounds.zipWithNext().mapIndexedNotNull { i, (a, b) ->
+                    hr.filter { it.first in a..b }.takeIf { it.isNotEmpty() }?.let { l -> "${i + 1}km ${l.map { it.second }.average().toInt()}" }
+                }
+                text.text = "평균 $avg · 최고 $max bpm" + if (perKm.size > 1) "\n구간 평균  " + perKm.joinToString("  ·  ") else ""
+                chart.samples = hr; chart.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                text.text = "워치 심박을 읽지 못했습니다(${e.javaClass.simpleName})"
+            }
+        }
     }
 
     private fun shareImage() {

@@ -28,6 +28,21 @@
         <GridLayout android:id="@+id/grid" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="16dp" android:columnCount="2" android:background="@drawable/bg_card" android:tag="glass" android:padding="16dp" />
 
+        <!-- 워치 심박(헬스 커넥트) -->
+        <LinearLayout android:id="@+id/heartCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:orientation="vertical" android:background="@drawable/bg_card" android:tag="glass"
+            android:padding="16dp" android:visibility="gone">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="심박 (워치)" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView android:id="@+id/heartText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:textSize="14sp" android:textColor="#D9FFFFFF" android:lineSpacingExtra="3dp" />
+            <io.github.sby1234ai.runmate.ui.HeartChart android:id="@+id/heartChart" android:layout_width="match_parent"
+                android:layout_height="120dp" android:layout_marginTop="10dp" android:visibility="gone" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/heartBtn" style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:visibility="gone"
+                android:text="워치 심박 가져오기" android:textColor="#FFFFFFFF" app:strokeColor="#4DFFFFFF" app:cornerRadius="10dp" />
+        </LinearLayout>
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp"
             android:text="1km 구간" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
         <LinearLayout android:id="@+id/splits" android:layout_width="match_parent" android:layout_height="wrap_content"

@@ -24,6 +24,11 @@
 
     <!-- 지도 그림(OpenStreetMap 지도 조각)을 받아 오는 데만 씁니다. 설정에서 지도를 끄면 인터넷 요청이 생기지 않습니다.
          기록은 인터넷으로 보내는 코드가 없습니다. -->
+    <!-- 헬스 커넥트(읽기만): 워치 심박, 워치로 뛴 운동·경로·거리. 사용자가 허용한 것만 읽고 쓰지는 않음 -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- 지도 조각은 앱 전용 캐시 폴더에만 저장하므로 저장소 권한은 필요 없습니다(라이브러리가 넣어도 지움) -->
@@ -31,6 +36,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
 
     <uses-feature android:name="android.hardware.location.gps" android:required="true" />
+
+    <!-- 안드로이드 13 이하: 헬스 커넥트 앱이 있는지 확인 -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
 
     <application
         android:allowBackup="false"
@@ -54,6 +64,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".PrepActivity" android:exported="false" android:screenOrientation="portrait" />
+        <!-- 헬스 커넥트 권한 화면의 「개인정보 보호」 링크 → 설정 화면(무엇을 읽는지 설명) -->
+        <activity-alias android:name=".HealthRationale" android:targetActivity=".SettingsActivity" android:exported="true">
+            <intent-filter><action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" /></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".HealthPermissionUsage" android:targetActivity=".SettingsActivity" android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
         <activity android:name=".RunsActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".DetailActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="portrait" />

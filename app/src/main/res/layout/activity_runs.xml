@@ -18,6 +18,11 @@
         </LinearLayout>
 
         <LinearLayout android:id="@+id/allPane" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <!-- 워치로만 뛴 운동(삼성 헬스 등 → 헬스 커넥트)을 런메이트 기록으로 -->
+        <TextView android:id="@+id/btnImport" android:layout_width="match_parent" android:layout_height="48dp"
+            android:layout_marginTop="12dp" android:gravity="center" android:text="⌚  워치로 뛴 기록 가져오기"
+            android:textSize="15sp" android:textStyle="bold" android:textColor="#FFFFFFFF"
+            android:clickable="true" android:focusable="true" android:visibility="gone" />
         <LinearLayout android:id="@+id/summaryRow" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:layout_marginTop="14dp" android:visibility="gone">
             <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"

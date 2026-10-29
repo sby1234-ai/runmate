@@ -2,6 +2,8 @@ package io.github.sby1234ai.runmate
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -29,6 +31,37 @@ class RunsActivity : AppCompatActivity() {
         findViewById<View>(R.id.tabAll).setOnClickListener { selectTab(false) }
         findViewById<View>(R.id.tabBest).setOnClickListener { selectTab(true) }
         selectTab(savedInstanceState?.getBoolean("best") ?: intent.getBooleanExtra(EXTRA_BEST, false))
+        if (HealthLink.available(this)) {
+            val b = findViewById<View>(R.id.btnImport)
+            b.visibility = View.VISIBLE
+            io.github.sby1234ai.runmate.ui.Glass.apply(b, io.github.sby1234ai.runmate.ui.GlassKind.PANEL, true)
+            b.setOnClickListener { importWatch() }
+        }
+    }
+
+    private val askHealth = registerForActivityResult(
+        androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()) { importWatch(asked = true) }
+
+    /** 최근 30일 워치 운동 중 경로가 있는 것을 기록으로 저장(이미 있는 시각은 건너뜀) */
+    private fun importWatch(asked: Boolean = false) {
+        lifecycleScope.launch {
+            try {
+                if (!HealthLink.granted(this@RunsActivity)) {
+                    if (!asked) askHealth.launch(HealthLink.PERMISSIONS)
+                    else android.widget.Toast.makeText(this@RunsActivity, "헬스 커넥트 권한이 있어야 워치 기록을 가져올 수 있습니다", android.widget.Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+                val have = RunStore.ids(this@RunsActivity).toSet()
+                val runs = HealthLink.watchRuns(this@RunsActivity, 30, have)
+                runs.forEach { RunStore.save(this@RunsActivity, it) }
+                android.widget.Toast.makeText(this@RunsActivity,
+                    if (runs.isEmpty()) "새로 가져올 워치 기록이 없습니다(경로가 있는 최근 30일 달리기·걷기만 가져옵니다)" else "워치 기록 ${runs.size}개를 가져왔습니다",
+                    android.widget.Toast.LENGTH_LONG).show()
+                if (runs.isNotEmpty()) reload()
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this@RunsActivity, "워치 기록을 읽지 못했습니다(${e.javaClass.simpleName})", android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private var best = false
@@ -53,6 +86,10 @@ class RunsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        reload()
+    }
+
+    private fun reload() {
         val seq = ++loadSeq
         findViewById<TextView>(R.id.summary).text = "불러오는 중…"
         // 기록 파일을 읽고 최고 기록을 찾는 일은 화면이 멈추지 않게 뒤에서 합니다
