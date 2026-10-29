@@ -5,8 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import io.github.sby1234ai.runmate.logic.Activity
 import io.github.sby1234ai.runmate.logic.Geo
+import io.github.sby1234ai.runmate.logic.IntervalPlan
 import io.github.sby1234ai.runmate.logic.Motion
 import io.github.sby1234ai.runmate.logic.MotionClassifier
+import io.github.sby1234ai.runmate.logic.PauseTracker
 import io.github.sby1234ai.runmate.logic.Run
 import io.github.sby1234ai.runmate.logic.RunStats
 import io.github.sby1234ai.runmate.logic.Stats
@@ -22,7 +24,16 @@ object RunRecorder {
         val lastAccuracy: Float?,
         val usingActivityRecognition: Boolean,
         val savedRunId: Long?,
-    )
+        val plan: IntervalPlan?,
+        val pausedAt: Long?,
+        val pausedTotal: Long,
+        val pointCount: Int,
+        val endedAt: Long?,
+    ) {
+        val paused: Boolean get() = pausedAt != null
+        /** 멈춘 시간을 뺀 운동 시간(ms). */
+        fun activeMs(now: Long): Long = PauseTracker.activeTime(startedAt, endedAt ?: now, pausedAt, pausedTotal)
+    }
 
     fun interface Listener { fun onUpdate(s: Snapshot) }
 
@@ -35,16 +46,20 @@ object RunRecorder {
     private var classifier = MotionClassifier()
     private var lastAccuracy: Float? = null
     private var stats: Stats = RunStats.of(emptyList())
+    private var pause = PauseTracker()
+    private var plan: IntervalPlan? = null
+    private var endedAt: Long? = null
 
     @Volatile var recording = false; private set
     var startedAt = 0L; private set
     var usingActivityRecognition = false
     private var savedRunId: Long? = null
 
-    fun start(now: Long) {
+    fun start(now: Long, plan: IntervalPlan?) {
         synchronized(this) {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
+            pause = PauseTracker(); this.plan = plan; endedAt = null
             startedAt = now; recording = true
         }
         notifyListeners()
@@ -67,6 +82,7 @@ object RunRecorder {
             val speed = if (loc.hasSpeed()) loc.speed.toDouble() else derived
             val motion = classifier.onSpeed(speed, loc.time)
             points.add(TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, motion))
+            pause.update(motion, loc.time)
             stats = RunStats.of(points)
         }
         notifyListeners()
@@ -80,6 +96,7 @@ object RunRecorder {
     fun stop(): Run? {
         val run = synchronized(this) {
             recording = false
+            endedAt = System.currentTimeMillis()
             if (points.size >= 2) Run(startedAt, ArrayList(points)) else null
         }
         notifyListeners()
@@ -89,8 +106,12 @@ object RunRecorder {
     fun markSaved(id: Long) { savedRunId = id; notifyListeners() }
 
     fun snapshot(): Snapshot = synchronized(this) {
-        Snapshot(recording, startedAt, stats, classifier.current, lastAccuracy, usingActivityRecognition, savedRunId)
+        Snapshot(recording, startedAt, stats, classifier.current, lastAccuracy, usingActivityRecognition, savedRunId,
+            plan, pause.pausedAt, pause.pausedTotal, points.size, endedAt)
     }
+
+    /** 지금까지의 점 복사본(지도 그리기용). */
+    fun points(): List<TrackPoint> = synchronized(this) { ArrayList(points) }
 
     fun addListener(l: Listener) { listeners.add(l); l.onUpdate(snapshot()) }
     fun removeListener(l: Listener) { listeners.remove(l) }

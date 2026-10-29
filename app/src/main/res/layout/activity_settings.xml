@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="20dp" android:paddingBottom="28dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="설정" android:textSize="26sp" android:textStyle="bold" android:textColor="@color/ink" />
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="16dp" android:background="@drawable/bg_card" android:padding="16dp">
+            <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swMap"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="지도 보기" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
+                android:text="OpenStreetMap 지도 그림을 인터넷으로 받아 옵니다. 지도 서버는 화면에 띄운 지역의 지도 조각 요청을 받지만, 기록과 위치 기록은 어디로도 보내지 않습니다. 끄면 이 앱은 인터넷을 전혀 쓰지 않고 지나간 길 모양만 그립니다." />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swVoice"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="음성 안내" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
+                android:text="1km마다 거리와 방금 1km에 걸린 시간을 읽어 줍니다. 걷기↔뛰기가 바뀐 것이 확실하면 알려 주고, 인터벌을 골랐으면 뛰기·걷기 차례를 불러 줍니다. 음악을 듣는 중이면 잠깐 소리를 줄였다가 되돌립니다." />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnTestVoice"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
+                android:text="미리 들어 보기" android:textColor="@color/ink" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/swPause"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="자동 일시정지" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:lineSpacingExtra="3dp"
+                android:text="신호등 앞처럼 5초 넘게 멈춰 있으면 운동 시간을 멈추고, 다시 움직이면 이어서 잽니다. 평균 페이스는 이 설정과 상관없이 멈춘 시간을 빼고 계산합니다." />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="12dp" android:background="@drawable/bg_card" android:padding="16dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="저장 공간" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/ink" />
+            <TextView android:id="@+id/storage" style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnClearMap"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
+                android:text="받아 둔 지도 지우기" android:textColor="@color/ink" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/about" style="@style/Label" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="20dp" android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+</ScrollView>

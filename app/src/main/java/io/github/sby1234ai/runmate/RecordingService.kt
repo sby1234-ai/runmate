@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
@@ -25,8 +26,11 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import io.github.sby1234ai.runmate.data.Prefs
 import io.github.sby1234ai.runmate.data.RunStore
+import io.github.sby1234ai.runmate.logic.Coach
 import io.github.sby1234ai.runmate.logic.Format
+import io.github.sby1234ai.runmate.logic.IntervalPlan
 
 /**
  * 기록 중에는 알림을 띄운 채로 도는 서비스. 화면을 끄거나 다른 앱으로 가도 위치를 계속 받습니다.
@@ -52,6 +56,21 @@ class RecordingService : Service() {
 
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private var lastNotifAt = 0L
+    private var voice: Voice? = null
+    private var coach: Coach? = null
+    private val ticker = Handler(Looper.getMainLooper())
+
+    // 1초마다 음성 안내할 것이 있는지 봅니다(인터벌은 GPS가 잠시 끊겨도 시간대로 진행)
+    private val tick = object : Runnable {
+        override fun run() {
+            val s = RunRecorder.snapshot()
+            if (!s.recording) return
+            val now = System.currentTimeMillis()
+            val cues = coach?.update(now, s.startedAt, s.activeMs(now), s.stats, s.motion, s.paused) ?: emptyList()
+            cues.forEach { voice?.say(it) }
+            ticker.postDelayed(this, 1000)
+        }
+    }
 
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -76,7 +95,14 @@ class RecordingService : Service() {
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         ServiceCompat.startForeground(this, NOTIF_ID, buildNotification("기록을 시작했습니다"), type)
         if (RunRecorder.recording) return
-        RunRecorder.start(System.currentTimeMillis())
+        val plan = IntervalPlan.byId(Prefs.interval(this))
+        val autoPause = Prefs.autoPause(this)
+        RunRecorder.start(System.currentTimeMillis(), plan)
+        if (Prefs.voice(this)) {
+            voice = Voice(this)
+            coach = Coach(plan, autoPause)
+        }
+        ticker.post(tick)
         try {
             val req = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L)
                 .setMinUpdateIntervalMillis(1000L)
@@ -118,6 +144,8 @@ class RecordingService : Service() {
 
     private fun finish() {
         fused.removeLocationUpdates(callback)
+        ticker.removeCallbacks(tick)
+        voice?.shutdown(); voice = null; coach = null
         if (arPermissionGranted()) {
             try { ActivityRecognition.getClient(this).removeActivityTransitionUpdates(arPendingIntent()) } catch (_: SecurityException) {}
         }
@@ -132,6 +160,8 @@ class RecordingService : Service() {
 
     override fun onDestroy() {
         fused.removeLocationUpdates(callback)
+        ticker.removeCallbacks(tick)
+        voice?.shutdown(); voice = null
         super.onDestroy()
     }
 
@@ -159,8 +189,10 @@ class RecordingService : Service() {
 
     private fun updateNotification() {
         val s = RunRecorder.snapshot()
-        val elapsed = System.currentTimeMillis() - s.startedAt
-        val text = "${Format.km(s.stats.distance)} km · ${Format.duration(elapsed)} · 지금 ${s.motion.label}"
+        val now = System.currentTimeMillis()
+        val time = if (Prefs.autoPause(this)) s.activeMs(now) else now - s.startedAt
+        val state = if (Prefs.autoPause(this) && s.paused) "일시정지" else "지금 ${s.motion.label}"
+        val text = "${Format.km(s.stats.distance)} km · ${Format.duration(time)} · $state"
         getSystemService(NotificationManager::class.java).notify(NOTIF_ID, buildNotification(text))
     }
 }
