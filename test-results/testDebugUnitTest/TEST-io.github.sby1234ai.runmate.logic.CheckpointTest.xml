@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.CheckpointTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.095">
+  <properties/>
+  <testcase name="꺼져_있던_동안의_시간은_달리는_중이었으면_더하고_멈춤이었으면_안_더한다" classname="io.github.sby1234ai.runmate.logic.CheckpointTest" time="0.018"/>
+  <testcase name="저장본을_그대로_되읽는다" classname="io.github.sby1234ai.runmate.logic.CheckpointTest" time="0.076"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

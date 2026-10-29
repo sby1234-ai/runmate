@@ -1,0 +1,242 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+
+> Task :app:processDebugMainManifest
+/home/runner/work/runmate/runmate/app/src/main/AndroidManifest.xml:35:5-101 Warning:
+	uses-permission#android.permission.WRITE_EXTERNAL_STORAGE was tagged at AndroidManifest.xml:35 to remove other declarations but no other declaration present
+/home/runner/work/runmate/runmate/app/src/main/AndroidManifest.xml:36:5-100 Warning:
+	uses-permission#android.permission.READ_EXTERNAL_STORAGE was tagged at AndroidManifest.xml:36 to remove other declarations but no other declaration present
+
+> Task :app:mergeDebugResources
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :wear:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :wear:preBuild UP-TO-DATE
+> Task :wear:preDebugBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :wear:checkDebugAarMetadata
+> Task :wear:generateDebugResValues
+> Task :wear:mapDebugSourceSetPaths
+> Task :wear:generateDebugResources
+> Task :wear:packageDebugResources
+> Task :wear:createDebugCompatibleScreenManifests
+> Task :wear:extractDeepLinksDebug
+> Task :wear:parseDebugLocalResources
+> Task :wear:mergeDebugResources
+> Task :wear:processDebugMainManifest
+> Task :wear:processDebugManifest
+> Task :wear:preDebugUnitTestBuild UP-TO-DATE
+> Task :wear:javaPreCompileDebug
+> Task :wear:javaPreCompileDebugUnitTest
+> Task :wear:processDebugManifestForPackage
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :wear:processDebugResources
+> Task :app:processDebugResources
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :wear:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :wear:mergeDebugShaders
+> Task :wear:compileDebugShaders NO-SOURCE
+> Task :wear:generateDebugAssets UP-TO-DATE
+> Task :wear:mergeDebugAssets
+> Task :wear:compressDebugAssets
+> Task :wear:desugarDebugFileDependencies
+> Task :wear:checkDebugDuplicateClasses
+> Task :app:mergeExtDexDebug
+> Task :wear:mergeLibDexDebug
+> Task :wear:mergeExtDexDebug
+> Task :wear:mergeDebugJniLibFolders
+> Task :wear:mergeDebugNativeLibs NO-SOURCE
+> Task :wear:stripDebugDebugSymbols NO-SOURCE
+> Task :wear:validateSigningDebug
+> Task :wear:writeDebugAppMetadata
+> Task :wear:writeDebugSigningConfigVersions
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders
+> Task :app:mergeReleaseNativeLibs NO-SOURCE
+> Task :app:stripReleaseDebugSymbols NO-SOURCE
+> Task :app:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:buildKotlinToolingMetadata
+> Task :app:generateReleaseBuildConfig
+> Task :app:checkReleaseAarMetadata
+> Task :app:generateReleaseResValues
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :wear:compileDebugKotlin
+> Task :wear:compileDebugJavaWithJavac NO-SOURCE
+> Task :wear:bundleDebugClassesToCompileJar
+> Task :wear:compileDebugUnitTestKotlin NO-SOURCE
+> Task :wear:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :wear:processDebugJavaRes
+> Task :wear:bundleDebugClassesToRuntimeJar
+> Task :wear:processDebugUnitTestJavaRes NO-SOURCE
+> Task :wear:testDebugUnitTest NO-SOURCE
+> Task :app:mergeReleaseResources
+> Task :wear:dexBuilderDebug
+> Task :wear:mergeDebugGlobalSynthetics
+> Task :wear:mergeProjectDexDebug
+> Task :app:packageReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:parseReleaseLocalResources
+
+> Task :app:processReleaseMainManifest
+/home/runner/work/runmate/runmate/app/src/main/AndroidManifest.xml:35:5-101 Warning:
+	uses-permission#android.permission.WRITE_EXTERNAL_STORAGE was tagged at AndroidManifest.xml:35 to remove other declarations but no other declaration present
+/home/runner/work/runmate/runmate/app/src/main/AndroidManifest.xml:36:5-100 Warning:
+	uses-permission#android.permission.READ_EXTERNAL_STORAGE was tagged at AndroidManifest.xml:36 to remove other declarations but no other declaration present
+
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :app:javaPreCompileRelease
+> Task :app:desugarReleaseFileDependencies
+> Task :app:mergeReleaseStartupProfile
+> Task :wear:mergeDebugJavaResource
+> Task :app:processReleaseResources
+> Task :wear:packageDebug
+> Task :wear:createDebugApkListingFileRedirect
+> Task :wear:assembleDebug
+> Task :app:mergeReleaseArtProfile
+> Task :app:mergeReleaseShaders
+> Task :app:mergeExtDexRelease
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :wear:preReleaseBuild UP-TO-DATE
+> Task :wear:mergeReleaseJniLibFolders
+> Task :wear:mergeReleaseNativeLibs NO-SOURCE
+> Task :wear:stripReleaseDebugSymbols NO-SOURCE
+> Task :wear:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :wear:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :wear:checkReleaseDuplicateClasses
+> Task :wear:buildKotlinToolingMetadata
+> Task :wear:checkReleaseAarMetadata
+> Task :wear:generateReleaseResValues
+> Task :wear:mapReleaseSourceSetPaths
+> Task :wear:generateReleaseResources
+> Task :app:compileDebugKotlin
+> Task :app:optimizeReleaseResources
+> Task :wear:packageReleaseResources
+> Task :wear:parseReleaseLocalResources
+> Task :wear:createReleaseCompatibleScreenManifests
+> Task :wear:extractDeepLinksRelease
+> Task :wear:processReleaseMainManifest
+> Task :wear:processReleaseManifest
+> Task :wear:processReleaseManifestForPackage
+> Task :wear:javaPreCompileRelease
+> Task :wear:desugarReleaseFileDependencies
+> Task :wear:mergeReleaseStartupProfile
+> Task :wear:mergeReleaseResources
+> Task :wear:mergeExtDexRelease
+> Task :wear:mergeReleaseArtProfile
+> Task :wear:mergeReleaseShaders
+> Task :wear:compileReleaseShaders NO-SOURCE
+> Task :wear:generateReleaseAssets UP-TO-DATE
+> Task :wear:mergeReleaseAssets
+> Task :wear:compressReleaseAssets
+> Task :wear:extractReleaseVersionControlInfo
+> Task :wear:extractProguardFiles
+> Task :wear:collectReleaseDependencies
+> Task :wear:sdkReleaseDependencyData
+> Task :wear:validateSigningRelease
+> Task :wear:writeReleaseAppMetadata
+> Task :wear:writeReleaseSigningConfigVersions
+> Task :wear:processReleaseResources
+> Task :wear:optimizeReleaseResources
+> Task :wear:compileReleaseKotlin
+> Task :wear:compileReleaseJavaWithJavac NO-SOURCE
+> Task :wear:dexBuilderRelease
+> Task :wear:mergeReleaseGlobalSynthetics
+> Task :wear:mergeDexRelease
+> Task :wear:generateReleaseLintVitalReportModel
+> Task :wear:compileReleaseArtProfile
+> Task :wear:processReleaseJavaRes
+> Task :wear:mergeReleaseJavaResource
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/MainActivity.kt:94:16 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/MainActivity.kt:95:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/ui/MapPanel.kt:163:38 'val longitudeSpan: Double' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/ui/MapPanel.kt:166:48 'val longitudeSpan: Double' is deprecated. Deprecated in Java.
+
+> Task :app:compileReleaseKotlin
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/MainActivity.kt:94:16 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/MainActivity.kt:95:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/ui/MapPanel.kt:163:38 'val longitudeSpan: Double' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/runmate/runmate/app/src/main/java/io/github/sby1234ai/runmate/ui/MapPanel.kt:166:48 'val longitudeSpan: Double' is deprecated. Deprecated in Java.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:compileReleaseJavaWithJavac
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:dexBuilderRelease
+> Task :app:packageDebug
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:testDebugUnitTest
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :app:mergeReleaseGlobalSynthetics
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:processReleaseJavaRes
+> Task :app:mergeDexRelease
+> Task :app:compileReleaseArtProfile
+> Task :app:mergeReleaseJavaResource
+> Task :wear:lintVitalAnalyzeRelease
+> Task :wear:lintVitalReportRelease
+> Task :wear:lintVitalRelease
+> Task :wear:packageRelease
+> Task :wear:createReleaseApkListingFileRedirect
+> Task :wear:assembleRelease
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1793310223480.json
+
+BUILD SUCCESSFUL in 1m 32s
+169 actionable tasks: 169 executed

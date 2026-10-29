@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.CoachingTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.104">
+  <properties/>
+  <testcase name="걷기로_바뀐_것은_15초_이어진_뒤에_알린다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.007"/>
+  <testcase name="가장_빠른_1km를_찾는다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.012"/>
+  <testcase name="걷기가_없는_인터벌은_뛰기_뒤에_끝난다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.001"/>
+  <testcase name="코치는_1km마다_한_번_알린다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.034"/>
+  <testcase name="이번_주와_이번_달_합계" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.008"/>
+  <testcase name="오래_멈추면_일시정지하고_멈춘_시간을_뺀다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.001"/>
+  <testcase name="인터벌_단계를_시간으로_정한다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.001"/>
+  <testcase name="음성_시간_표현" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.002"/>
+  <testcase name="인터벌이_있으면_단계마다_알린다" classname="io.github.sby1234ai.runmate.logic.CoachingTest" time="0.027"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

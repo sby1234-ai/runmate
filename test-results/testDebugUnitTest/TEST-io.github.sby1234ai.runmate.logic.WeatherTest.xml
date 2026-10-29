@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.WeatherTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.006">
+  <properties/>
+  <testcase name="응답을_읽는다" classname="io.github.sby1234ai.runmate.logic.WeatherTest" time="0.005"/>
+  <testcase name="위치는_소수점_첫째_자리까지만_보낸다" classname="io.github.sby1234ai.runmate.logic.WeatherTest" time="0.0"/>
+  <testcase name="날씨_코드를_하늘_상태로_바꾼다" classname="io.github.sby1234ai.runmate.logic.WeatherTest" time="0.0"/>
+  <testcase name="점검용_가상_기록은_걷기와_뛰기가_섞여_있다" classname="io.github.sby1234ai.runmate.logic.WeatherTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.FormatTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.047">
+  <properties/>
+  <testcase name="페이스와_시간_표시" classname="io.github.sby1234ai.runmate.logic.FormatTest" time="0.047"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

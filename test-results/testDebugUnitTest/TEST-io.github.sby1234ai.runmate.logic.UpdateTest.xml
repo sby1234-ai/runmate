@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.UpdateTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.024">
+  <properties/>
+  <testcase name="버전을_숫자로_비교한다" classname="io.github.sby1234ai.runmate.logic.UpdateTest" time="0.019"/>
+  <testcase name="릴리스_응답에서_설치_파일을_찾는다" classname="io.github.sby1234ai.runmate.logic.UpdateTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

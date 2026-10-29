@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.SmootherTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.023">
+  <properties/>
+  <testcase name="제자리에서_흔들리는_GPS의_가짜_거리를_크게_줄인다" classname="io.github.sby1234ai.runmate.logic.SmootherTest" time="0.007"/>
+  <testcase name="실제로_달린_거리는_거의_그대로_둔다" classname="io.github.sby1234ai.runmate.logic.SmootherTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

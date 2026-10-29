@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.PauseBreakTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.001">
+  <properties/>
+  <testcase name="최근_10초에_12m_넘게_움직였으면_멈춤으로_보지_않는다" classname="io.github.sby1234ai.runmate.logic.PauseBreakTest" time="0.001"/>
+  <testcase name="GPS_속도가_0이어도_움직였으면_계산한_속도를_쓴다" classname="io.github.sby1234ai.runmate.logic.PauseBreakTest" time="0.0"/>
+  <testcase name="일시정지_뒤_첫_점까지의_이동은_거리와_시간에서_뺀다" classname="io.github.sby1234ai.runmate.logic.PauseBreakTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

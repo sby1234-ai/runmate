@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.StepsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.006">
+  <properties/>
+  <testcase name="케이던스로_걷기와_뛰기를_나눈다" classname="io.github.sby1234ai.runmate.logic.StepsTest" time="0.0"/>
+  <testcase name="걸음_수와_케이던스를_센다" classname="io.github.sby1234ai.runmate.logic.StepsTest" time="0.0"/>
+  <testcase name="걸음이_멈추면_케이던스는_0_자료가_적으면_null" classname="io.github.sby1234ai.runmate.logic.StepsTest" time="0.0"/>
+  <testcase name="몇_km째인지와_그_구간_페이스" classname="io.github.sby1234ai.runmate.logic.StepsTest" time="0.005"/>
+  <testcase name="일시정지_중_걸음은_넣지_않고_센서가_줄면_건너뛴다" classname="io.github.sby1234ai.runmate.logic.StepsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

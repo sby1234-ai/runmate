@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.PauseScenarioTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-29T21:44:50" hostname="runnervm48cm3" time="0.081">
+  <properties/>
+  <testcase name="어떤_순서로_눌러도_시간은_줄지_않고_멈춤_시간만큼만_빠진다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.073"/>
+  <testcase name="버튼으로_멈추면_움직여도_저절로_풀리지_않는다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.0"/>
+  <testcase name="멈춰_서서_일시정지를_눌러도_시간이_거꾸로_가지_않는다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.001"/>
+  <testcase name="자동_일시정지_중_다시_시작을_누르면_풀리고_잠시는_다시_안_멈춘다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.001"/>
+  <testcase name="다시_시작하면_바로_시간이_흐른다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.0"/>
+  <testcase name="자동_일시정지를_끄면_멈춰_있어도_시간이_흐른다" classname="io.github.sby1234ai.runmate.logic.PauseScenarioTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
