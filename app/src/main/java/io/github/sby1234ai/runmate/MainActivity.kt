@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var intervalNow: TextView
     private val ticker = Handler(Looper.getMainLooper())
     private var openedSavedId: Long? = null
+    /** 알림 「종료」로 끝냈으면, 저장되는 대로 결과 화면을 엽니다(화면이 늦게 켜져도 놓치지 않게). */
+    private var openDetailOnSave = false
     private var demoWeather: WeatherNow? = null
     private var currentSky = Sky.PARTLY
     private var currentNight = false
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        openedSavedId = RunRecorder.snapshot().savedRunId
+        if (!openDetailOnSave) openedSavedId = RunRecorder.snapshot().savedRunId
         RunRecorder.addListener(listener)
         ticker.post(tick)
         renderHome()
@@ -432,8 +434,8 @@ class MainActivity : AppCompatActivity() {
 
         // 방금 정지해서 저장된 기록이면 지도와 함께 결과 화면을 엽니다
         val saved = s.savedRunId
-        if (!s.recording && saved != null && saved != openedSavedId) {
-            openedSavedId = saved
+        if (!s.recording && saved != null && (saved != openedSavedId || openDetailOnSave)) {
+            openedSavedId = saved; openDetailOnSave = false
             renderHome()
             startActivity(Intent(this, DetailActivity::class.java).putExtra(DetailActivity.EXTRA_ID, saved))
         }
@@ -485,6 +487,7 @@ class MainActivity : AppCompatActivity() {
     /** 알림의 「종료」를 눌러 열렸으면 기록을 끝냅니다(저장되면 결과 화면이 자동으로 열림). */
     private fun handleStop(i: Intent?) {
         if (i?.action == RecordingService.ACTION_STOP_FROM_NOTIF && RunRecorder.recording) {
+            openDetailOnSave = true
             RecordingService.stop(this)
             Toast.makeText(this, "기록을 끝냈습니다", Toast.LENGTH_SHORT).show()
         }
