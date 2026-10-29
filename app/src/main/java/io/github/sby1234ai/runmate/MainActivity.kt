@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity() {
     private var currentNight = false
     private var darkTiles = false
     private var running = false
+    /** 달리는 중에 뒤로가기로 첫 화면에 나와 있는지(기록은 계속) */
+    private var homeWhileRunning = false
     /** 이번에 켠 동안 범주(bg_clear 등)별로 고른 사진 — 앱을 다시 켜면 새로 고름 */
     private val bgPick = mutableMapOf<String, Int>()
     private var shownBg = 0
@@ -131,7 +133,11 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) bgPick.clear()
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         // 「달리기 시작」 → 준비 화면(운동·음성·자동 일시정지 고르기 → 3·2·1) → 돌아오면 기록 시작
-        findViewById<View>(R.id.btnStart).setOnClickListener { prep.launch(Intent(this, PrepActivity::class.java)) }
+        // 달리는 중 첫 화면으로 나왔으면 같은 자리가 「달리는 중」 막대 → 누르면 달리기 화면으로
+        findViewById<View>(R.id.btnStart).setOnClickListener {
+            if (RunRecorder.recording) { homeWhileRunning = false; render(RunRecorder.snapshot()) }
+            else prep.launch(Intent(this, PrepActivity::class.java))
+        }
         findViewById<View>(R.id.btnPause).setOnClickListener {
             val s = RunRecorder.snapshot()
             // 멈춘 상태(자동 포함)면 다시 시작, 아니면 일시정지
@@ -148,6 +154,8 @@ class MainActivity : AppCompatActivity() {
         // 뒤로가기로 바로 꺼지지 않게 한 번 묻기. 기록 중이면 닫아도 기록은 알림과 함께 계속됨
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // 달리기 화면에서 뒤로가기 → 앱은 닫지 않고 첫 화면으로(기록은 계속, 아래 막대로 돌아옴)
+                if (runPanel.visibility == View.VISIBLE) { homeWhileRunning = true; render(RunRecorder.snapshot()); return }
                 val recording = RunRecorder.recording
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle("런메이트를 닫을까요?")
@@ -206,7 +214,7 @@ class MainActivity : AppCompatActivity() {
     private val tick = object : Runnable {
         override fun run() {
             val s = RunRecorder.snapshot()
-            if (s.recording) { renderTime(s); renderInterval(s) }
+            if (s.recording) { renderTime(s); renderInterval(s); renderMiniBar(s) }
             // 초가 바뀌는 순간에 맞춰 다음 갱신(1초마다 정확히). 알림의 시계와 같은 기준점이라 같은 초를 보여 줍니다
             val delay = if (s.recording && !s.paused) 1000L - (s.activeNow() % 1000L) + 15L else 1000L
             ticker.postDelayed(this, delay)
@@ -333,18 +341,9 @@ class MainActivity : AppCompatActivity() {
     private fun renderHome() {
         renderSetup()
         val grid = findViewById<GridLayout>(R.id.tiles)
-        val plan = IntervalPlan.byId(Prefs.interval(this))
-        fun onOff(v: Boolean) = if (v) "켜짐" else "꺼짐"
-        // 타일 4개(2×2): 기록(모든 기록·최고 기록은 기록 화면 안의 탭), 인터벌, 음성, 자동 일시정지. 설정은 오른쪽 위 톱니바퀴
+        // 첫 화면 타일은 「기록」 하나(넓게). 운동 종류·음성·자동 일시정지는 달리기 준비 화면에서, 설정은 톱니바퀴로
         val tiles = listOf(
             Tile(R.drawable.ic_list, R.color.ink, "기록", "불러오는 중…") { startActivity(Intent(this, RunsActivity::class.java)) },
-            Tile(R.drawable.ic_timer, R.color.walk, "인터벌 코칭", plan?.shortName ?: "자유롭게 달리기") { chooseInterval() },
-            Tile(R.drawable.ic_volume, R.color.sky, "음성 안내", onOff(Prefs.voice(this))) {
-                Prefs.setVoice(this, !Prefs.voice(this)); renderHome()
-            },
-            Tile(R.drawable.ic_pause, R.color.still, "자동 일시정지", onOff(Prefs.autoPause(this))) {
-                Prefs.setAutoPause(this, !Prefs.autoPause(this)); renderHome()
-            },
         )
         grid.removeAllViews()
         val gap = (6 * resources.displayMetrics.density).toInt()
@@ -360,7 +359,7 @@ class MainActivity : AppCompatActivity() {
             v.findViewById<TextView>(R.id.sub).text = t.sub
             v.setOnClickListener { t.onClick() }
             v.contentDescription = "${t.title}, ${t.sub}"
-            val lp = GridLayout.LayoutParams(GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, 1f))
+            val lp = GridLayout.LayoutParams(GridLayout.spec(GridLayout.UNDEFINED), GridLayout.spec(GridLayout.UNDEFINED, if (tiles.size == 1) 2 else 1, 1f))
             lp.width = 0; lp.setMargins(gap, gap, gap, gap)
             grid.addView(v, lp)
             v
@@ -376,8 +375,8 @@ class MainActivity : AppCompatActivity() {
                 if (isFinishing) return@runOnUiThread
                 views[0].findViewById<TextView>(R.id.sub).text = when {
                     runs.isEmpty() -> "아직 없음"
-                    best1k != null -> "${runs.size}개 · 최고 1km ${Format.duration(best1k)}"
-                    else -> "${runs.size}개 · ${Format.km(sum.all.distance)} km"
+                    best1k != null -> "모든 기록 ${runs.size}개 · ${Format.km(sum.all.distance)} km · 최고 1km ${Format.duration(best1k)}"
+                    else -> "모든 기록 ${runs.size}개 · ${Format.km(sum.all.distance)} km"
                 }
                 findViewById<TextView>(R.id.weekLine).text =
                     "이번 주 ${Format.km(sum.week.distance)} km · ${sum.week.count}번 달림"
@@ -434,6 +433,18 @@ class MainActivity : AppCompatActivity() {
         timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
     }
 
+    /** 첫 화면 맨 아래 버튼: 평소엔 「달리기 시작」, 달리는 중엔 「달리는 중 12:34 · 2.31 km」 */
+    private fun renderMiniBar(s: RunRecorder.Snapshot) {
+        val label = findViewById<TextView>(R.id.startLabel)
+        val txt = if (s.recording) {
+            val t = android.text.format.DateUtils.formatElapsedTime(s.activeNow() / 1000)
+            (if (s.paused) "일시정지 " else "달리는 중 ") + "$t · ${Format.km(s.stats.distance)} km"
+        } else "달리기 시작"
+        if (label.text != txt) label.text = txt
+        label.textSize = if (s.recording) 18f else 21f
+        findViewById<View>(R.id.btnStart).contentDescription = if (s.recording) "$txt, 눌러서 달리기 화면으로" else txt
+    }
+
     private fun renderInterval(s: RunRecorder.Snapshot) {
         val plan = s.plan
         if (!s.recording || plan == null) { intervalNow.text = ""; return }
@@ -448,8 +459,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun render(s: RunRecorder.Snapshot) {
-        home.visibility = if (s.recording) View.GONE else View.VISIBLE
-        runPanel.visibility = if (s.recording) View.VISIBLE else View.GONE
+        if (!s.recording) homeWhileRunning = false
+        val showRun = s.recording && !homeWhileRunning
+        home.visibility = if (showRun) View.GONE else View.VISIBLE
+        runPanel.visibility = if (showRun) View.VISIBLE else View.GONE
+        renderMiniBar(s)
         sky.dim = s.recording
         io.github.sby1234ai.runmate.ui.Backdrop.dim = s.recording
         if (running != s.recording) { running = s.recording; applyBackground(); showOnLockScreen(s.recording && Prefs.lockScreen(this)) }

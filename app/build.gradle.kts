@@ -15,8 +15,8 @@ android {
         applicationId = "io.github.sby1234ai.runmate"
         minSdk = 26
         targetSdk = 36
-        versionCode = 21
-        versionName = "0.3.18"
+        versionCode = 22
+        versionName = "0.3.19"
     }
 
     signingConfigs {
