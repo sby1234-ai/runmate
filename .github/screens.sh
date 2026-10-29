@@ -64,6 +64,17 @@ shot 18_lock_notification 0
 adb shell cmd statusbar expand-notifications; move 3
 shot 19_shade 0
 adb shell cmd statusbar collapse
+# 강제 종료 복구: 달리는 중 앱 프로세스를 죽여도(휴대폰이 강제로 끈 것처럼) 다시 살아나 이어서 기록하는지
+send resume; move 35                                   # 30초마다 중간 저장
+note "R1 강제 종료 직전"
+PID=$(adb shell pidof $P | tr -d '\r')
+adb shell run-as $P kill -9 $PID || adb shell kill -9 $PID
+move 15
+note "R2 강제 종료 15초 뒤(시스템이 다시 살렸으면 이어짐)"
+adb shell am start -n $P/.MainActivity >/dev/null; move 10
+note "R3 앱을 다시 연 뒤 10초(이어서 기록, 거리·시간이 R1보다 커야 함)"
+adb shell pidof $P > shots/restore_pid.txt; echo "before=$PID" >> shots/restore_pid.txt
+
 # 앱 시간과 알림(상태창) 시간이 같은지, 실제 30초가 화면에서도 30초인지
 # (디버그 빌드는 앱이 화면에 보인 초와 알림 시계의 기준값을 로그 RMTIME으로 남김)
 adb logcat -c
