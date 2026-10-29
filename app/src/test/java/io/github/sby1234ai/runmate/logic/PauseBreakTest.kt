@@ -14,4 +14,11 @@ class PauseBreakTest {
         assertEquals(66.7, s.distance, 2.0)
         assertEquals(20_000L, s.moving)
     }
+
+    @Test fun GPS_속도가_0이어도_움직였으면_계산한_속도를_쓴다() {
+        assertEquals(2.8, MotionClassifier.pickSpeed(0.0, 2.8)!!, 0.001)
+        assertEquals(3.1, MotionClassifier.pickSpeed(3.1, 2.8)!!, 0.001)
+        assertEquals(0.0, MotionClassifier.pickSpeed(0.0, 0.6)!!, 0.001)   // 제자리 흔들림은 무시
+        assertEquals(1.5, MotionClassifier.pickSpeed(null, 1.5)!!, 0.001)
+    }
 }

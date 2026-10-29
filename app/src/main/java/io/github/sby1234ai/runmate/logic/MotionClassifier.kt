@@ -67,4 +67,17 @@ class MotionClassifier(
         val m = s.size / 2
         return if (s.size % 2 == 1) s[m] else (s[m - 1] + s[m]) / 2
     }
+
+    companion object {
+        /**
+         * GPS가 알려 준 속도와 위치 변화로 계산한 속도 중 무엇을 쓸지.
+         * 어떤 휴대폰·상황에서는 실제로 움직이는데도 GPS 속도가 0으로 오므로,
+         * 그때 위치가 초속 1m 넘게 바뀌었다면 계산한 속도를 씁니다(가만히 있을 때의 GPS 흔들림은 대개 그보다 작음).
+         */
+        fun pickSpeed(reported: Double?, derived: Double?): Double? = when {
+            reported != null && reported > 0.2 -> reported
+            derived != null && derived > 1.0 -> derived
+            else -> reported ?: derived
+        }
+    }
 }

@@ -92,7 +92,7 @@ object RunRecorder {
                 derived = d / dt
                 if (derived > MAX_SPEED_MPS) return@synchronized   // 순간 이동처럼 튄 점은 버림
             }
-            val speed = if (loc.hasSpeed()) loc.speed.toDouble() else derived
+            val speed = MotionClassifier.pickSpeed(if (loc.hasSpeed()) loc.speed.toDouble() else null, derived)
             val motion = classifier.onSpeed(speed, loc.time)
             points.add(TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, motion, breakBefore = breakNext && prev != null))
             breakNext = false
