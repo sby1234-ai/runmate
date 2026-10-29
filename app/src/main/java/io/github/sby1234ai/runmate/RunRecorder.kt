@@ -6,6 +6,7 @@ import android.os.Looper
 import android.os.SystemClock
 import io.github.sby1234ai.runmate.logic.Activity
 import io.github.sby1234ai.runmate.logic.Geo
+import io.github.sby1234ai.runmate.logic.GpsSmoother
 import io.github.sby1234ai.runmate.logic.IntervalPlan
 import io.github.sby1234ai.runmate.logic.Motion
 import io.github.sby1234ai.runmate.logic.MotionClassifier
@@ -72,6 +73,7 @@ object RunRecorder {
     private var demoMotion: Motion? = null
     private var breakNext = false
     private var stepper = StepTracker()
+    private val smoother = GpsSmoother()
 
     @Volatile var recording = false; private set
     var startedAt = 0L; private set
@@ -83,7 +85,7 @@ object RunRecorder {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
             pause = PauseTracker(autoEnabled = autoPause); this.plan = plan; endedAt = null; demoMotion = null
-            breakNext = false; stepper = StepTracker()
+            breakNext = false; stepper = StepTracker(); smoother.reset()
             startedAt = now; startElapsed = SystemClock.elapsedRealtime(); endElapsed = null; recording = true
         }
         notifyListeners()
@@ -104,13 +106,20 @@ object RunRecorder {
                 derived = d / dt
                 if (derived > MAX_SPEED_MPS) return@synchronized   // 순간 이동처럼 튄 점은 버림
             }
+            // 흔들림을 거른 위치로 저장·계산합니다(다시 시작한 첫 점은 앞과 이어지지 않으므로 새로 시작)
+            if (breakNext) smoother.reset()
+            val (lat, lon) = smoother.filter(loc.latitude, loc.longitude, if (loc.hasAccuracy()) loc.accuracy else 10f, loc.time)
+            if (prev != null && !breakNext) {
+                val dt = (loc.time - prev.time) / 1000.0
+                derived = Geo.distance(prev.lat, prev.lon, lat, lon) / dt
+            }
             val speed = MotionClassifier.pickSpeed(if (loc.hasSpeed()) loc.speed.toDouble() else null, derived)
             val raw = classifier.onSpeed(speed, loc.time)
-            val candidate = TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, raw)
+            val candidate = TrackPoint(loc.time, lat, lon, speed?.toFloat(), loc.accuracy, raw)
             // 속도로는 '멈춤'이어도 최근 10초에 12m 넘게 움직였으면 걷는 중으로 봅니다
             val motion = if (raw == Motion.STILL && !breakNext &&
                 MotionClassifier.movedRecently(points + candidate, loc.time)) Motion.WALK else raw
-            points.add(TrackPoint(loc.time, loc.latitude, loc.longitude, speed?.toFloat(), loc.accuracy, motion, breakBefore = breakNext && prev != null))
+            points.add(TrackPoint(loc.time, lat, lon, speed?.toFloat(), loc.accuracy, motion, breakBefore = breakNext && prev != null))
             breakNext = false
             pause.update(motion, SystemClock.elapsedRealtime())   // 시간 계산은 모두 기기 경과 시계 하나로
             stats = RunStats.of(points)

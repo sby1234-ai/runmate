@@ -35,11 +35,11 @@ object RunStats {
             if (dt <= 0) continue
             val d = Geo.distance(a.lat, a.lon, b.lat, b.lon)
             if (dt > GAP_MS || b.breakBefore) continue
-            dist += d
+            // 멈춰 있던 구간(제자리 GPS 흔들림)은 거리에 넣지 않습니다
             when (b.motion) {
-                Motion.RUN -> { runD += d; runT += dt; moving += dt }
-                Motion.WALK -> { walkD += d; walkT += dt; moving += dt }
-                Motion.STILL -> {}
+                Motion.RUN -> { runD += d; runT += dt; moving += dt; dist += d }
+                Motion.WALK -> { walkD += d; walkT += dt; moving += dt; dist += d }
+                Motion.STILL -> continue
             }
             while (dist >= nextKm) {
                 // 이 구간 안에서 1km 지점을 지난 시각을 선형으로 나눠 계산
