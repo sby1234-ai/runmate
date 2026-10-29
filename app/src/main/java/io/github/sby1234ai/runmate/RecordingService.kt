@@ -63,6 +63,7 @@ class RecordingService : Service() {
 
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private var lastNotifAt = 0L
+    private var lastPaused = false
     private var voice: Voice? = null
     private var coach: Coach? = null
     private val ticker = Handler(Looper.getMainLooper())
@@ -75,7 +76,8 @@ class RecordingService : Service() {
             val now = System.currentTimeMillis()
             val cues = coach?.update(now, s.startedAt, s.activeMs(now), s.stats, s.motion, s.paused) ?: emptyList()
             cues.forEach { voice?.say(it) }
-            if (now - lastNotifAt > 5000) { lastNotifAt = now; updateNotification() }
+            // 5초마다, 그리고 멈춤↔다시 시작이 바뀌는 순간 바로 알림(잠금 화면 카드)을 고칩니다
+            if (now - lastNotifAt > 5000 || s.paused != lastPaused) { lastNotifAt = now; lastPaused = s.paused; updateNotification() }
             ticker.postDelayed(this, 1000)
         }
     }
@@ -209,22 +211,60 @@ class RecordingService : Service() {
     private fun buildNotification(text: String): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val manual = RunRecorder.snapshot().paused   // 자동으로 멈춘 경우도 「다시 시작」을 보여 줌
+        val snap = RunRecorder.snapshot()
+        val paused = snap.paused   // 자동으로 멈춘 경우도 「다시 시작」을 보여 줌
         val toggle = PendingIntent.getService(this, 3,
-            Intent(this, RecordingService::class.java).setAction(if (manual) ACTION_RESUME else ACTION_PAUSE),
+            Intent(this, RecordingService::class.java).setAction(if (paused) ACTION_RESUME else ACTION_PAUSE),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_run)
-            .setContentTitle(if (manual) "런메이트 일시정지" else "런메이트 기록 중")
+            .setContentTitle(if (paused) "런메이트 일시정지" else "런메이트 기록 중")
             .setContentText(text)
+            // 삼성 헬스처럼 잠금 화면에서도 앱 화면 같은 카드: 어두운 바탕, 초 단위로 흐르는 큰 시간, 거리·페이스
+            .setCustomContentView(runViews(R.layout.notif_run_small, snap))
+            .setCustomBigContentView(runViews(R.layout.notif_run_big, snap))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setColorized(true)
+            .setColor(0xFF141B24.toInt())
             .setContentIntent(open)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)       // 잠금 화면에서도 거리·시간이 보이게
+            .setShowWhen(false)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)       // 잠금 화면에서도 내용이 보이게
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .addAction(0, if (manual) "다시 시작" else "일시정지", toggle)
+            .addAction(0, if (paused) "▶ 다시 시작" else "Ⅱ 일시정지", toggle)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
+    }
+
+    /** 알림 카드 내용. 시간은 Chronometer라 앱이 고치지 않아도 잠금 화면에서 1초마다 흐릅니다(멈춤이면 멈춤). */
+    private fun runViews(layout: Int, s: RunRecorder.Snapshot): android.widget.RemoteViews {
+        val v = android.widget.RemoteViews(packageName, layout)
+        val now = System.currentTimeMillis()
+        val active = if (s.recording) s.activeMs(now) else 0L
+        val base = android.os.SystemClock.elapsedRealtime() - active
+        v.setChronometer(R.id.nTime, base, null, s.recording && !s.paused)
+        v.setTextViewText(R.id.nDist, if (layout == R.layout.notif_run_small) "${Format.km(s.stats.distance)} km" else Format.km(s.stats.distance))
+        val state = when {
+            !s.recording -> "준비 중"
+            s.manualPaused -> "일시정지"
+            s.autoPaused -> "자동 일시정지"
+            s.lastAccuracy == null -> "GPS 찾는 중"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.RUN -> "뛰는 중"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.WALK -> "걷는 중"
+            else -> "멈춤"
+        }
+        v.setTextViewText(R.id.nState, state)
+        if (layout == R.layout.notif_run_big) {
+            v.setTextViewText(R.id.nPace, Format.pace(s.stats.paceSecPerKm))
+            v.setTextViewText(R.id.nRun, Format.km(s.stats.runDistance))
+            v.setInt(R.id.nState, "setBackgroundResource", when (state) {
+                "뛰는 중" -> R.drawable.bg_notif_chip
+                "걷는 중" -> R.drawable.bg_notif_chip_walk
+                else -> R.drawable.bg_notif_chip_pause
+            })
+        }
+        return v
     }
 
     private fun updateNotification() {

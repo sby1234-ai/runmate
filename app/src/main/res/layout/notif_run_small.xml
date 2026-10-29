@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 잠금 화면·알림창(접힌 모양): 흐르는 시간 · 거리 · 상태 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal" android:gravity="center_vertical">
+    <Chronometer android:id="@+id/nTime" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textSize="24sp" android:textStyle="bold" android:textColor="#FFFFFFFF" android:fontFeatureSettings="tnum" />
+    <TextView android:id="@+id/nDist" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginStart="14dp" android:textSize="18sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+    <TextView android:id="@+id/nState" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        android:layout_marginStart="10dp" android:gravity="end" android:maxLines="1" android:ellipsize="end"
+        android:textSize="14sp" android:textStyle="bold" android:textColor="#FFFF8A6B" />
+</LinearLayout>

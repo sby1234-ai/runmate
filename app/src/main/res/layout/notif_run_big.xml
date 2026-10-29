@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 잠금 화면·알림창(펼친 모양): 앱의 달리는 중 화면처럼 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:paddingTop="4dp" android:paddingBottom="4dp">
+    <TextView android:id="@+id/nState" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp" android:paddingVertical="4dp" android:background="@drawable/bg_notif_chip"
+        android:textSize="13sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+    <Chronometer android:id="@+id/nTime" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:textSize="44sp" android:textStyle="bold" android:textColor="#FFFFFFFF"
+        android:fontFeatureSettings="tnum" android:includeFontPadding="false" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:layout_marginTop="10dp" android:background="@drawable/bg_notif_stats"
+        android:paddingVertical="8dp">
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <TextView android:id="@+id/nDist" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="18sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="거리 km" android:textSize="11sp" android:textColor="#B3FFFFFF" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <TextView android:id="@+id/nPace" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="18sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="평균 페이스" android:textSize="11sp" android:textColor="#B3FFFFFF" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <TextView android:id="@+id/nRun" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="18sp" android:textStyle="bold" android:textColor="#FFFFB199" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="뛴 거리 km" android:textSize="11sp" android:textColor="#B3FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

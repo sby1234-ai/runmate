@@ -52,4 +52,16 @@ move 8;                note "7 다시 시작 16초 뒤"
 stay 30;               note "8 30초 멈춰 섬(자동 일시정지)"
 shot 16_autopaused 1
 send resume; stay 8;   note "9 자동 일시정지 중 다시 시작 8초 뒤(서 있어도 시간 흐름)"
+# 잠금 화면: 앱을 켜 둔 채 잠그면 달리는 중 화면이 잠금 위에, 다른 곳에서 잠그면 알림 카드가 보여야 함
+send resume; move 4
+adb shell am start -n $P/.MainActivity >/dev/null; move 3
+adb shell input keyevent KEYCODE_SLEEP; move 4; adb shell input keyevent KEYCODE_WAKEUP; move 3
+shot 17_lock_app 0
+adb shell dumpsys window | grep -m3 -iE "mDreamingLockscreen|isKeyguardShowing|mShowingLockscreen|KeyguardShowing" > shots/lock_state.txt || true
+adb shell input keyevent KEYCODE_HOME; move 2
+adb shell input keyevent KEYCODE_SLEEP; move 4; adb shell input keyevent KEYCODE_WAKEUP; move 3
+shot 18_lock_notification 0
+adb shell cmd statusbar expand-notifications; move 3
+shot 19_shade 0
+adb shell cmd statusbar collapse
 cat shots/pause_check.txt

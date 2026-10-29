@@ -358,7 +358,7 @@ class MainActivity : AppCompatActivity() {
         home.visibility = if (s.recording) View.GONE else View.VISIBLE
         runPanel.visibility = if (s.recording) View.VISIBLE else View.GONE
         sky.dim = s.recording
-        if (running != s.recording) { running = s.recording; applyBackground() }
+        if (running != s.recording) { running = s.recording; applyBackground(); showOnLockScreen(s.recording) }
 
         val autoPaused = s.recording && s.autoPaused
         val paused = s.recording && s.paused
@@ -407,6 +407,19 @@ class MainActivity : AppCompatActivity() {
             openedSavedId = saved
             renderHome()
             startActivity(Intent(this, DetailActivity::class.java).putExtra(DetailActivity.EXTRA_ID, saved))
+        }
+    }
+
+    /**
+     * 삼성 헬스처럼, 달리는 중에 화면을 껐다 켜면 잠금을 풀지 않아도 이 화면(시간·거리·일시정지)이 바로 보이게 합니다.
+     * 기록이 끝나면 다시 잠금 화면 뒤로 숨깁니다. 다른 화면(설정 등)으로 가려면 잠금을 풀어야 합니다.
+     */
+    private fun showOnLockScreen(on: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) setShowWhenLocked(on)
+        else {
+            @Suppress("DEPRECATION")
+            if (on) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+            else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
     }
 
