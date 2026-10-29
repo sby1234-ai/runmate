@@ -27,21 +27,23 @@
 | 릴리스 | `app/build.gradle.kts`의 `versionName`을 올려 main에 푸시하면 그 버전 릴리스가 자동 생성(태그 푸시는 막혀 있음). 서명 키는 GitHub Secrets에만 있음 |
 | 웹 화면 | `web/` 폴더가 바뀌면 `.github/workflows/pages.yml`이 GitHub Pages로 배포 |
 
-## 지금 상태 (2026-10-29 20:00)
+## 지금 상태 (2026-10-29 20:55)
 
-- 배포: **v0.3.1** (versionCode 4) — 일시정지 버그 수정(자동·수동을 `PauseTracker` 하나로, 멈춤이면 「다시 시작」, 다시 시작 뒤 15초 자동 일시정지 없음, 최근 10초 12m 이동 시 멈춤 아님 `MotionClassifier.movedRecently`). 이전 v0.3.0 (versionCode 3) — 시안 UI, 날씨, 수동 일시정지, 백그라운드·잠금 화면 기록 유지(WakeLock·배치 없는 위치·배터리 최적화 제외 요청·잠금 화면 알림), GPS 속도 0 보정(`MotionClassifier.pickSpeed`)
-- UI(사용자 시안: 어두운 유리 + 사진 배경)
-  - 첫 화면: 날씨별 사진 배경(`res/drawable-nodpi/bg_<날씨>_<번호>.jpg`, Unsplash 무료, 출처 `docs/PHOTOS.md`, 하루마다 다른 사진), 사진이 없으면 `ui/SkyView.kt` 그라데이션. 날씨는 Open-Meteo(위치 소수점 첫째 자리만 전송, 설정에서 끔)
-  - 기능 타일 6개(어두운 유리), 가로로 긴 「달리기 시작」 버튼
-  - 달리는 중: 달리는 사진 배경, 작은 움직이는 러너(`ui/RunnerView.kt`), 「일시정지/다시 시작」(수동 일시정지 새 기능: `RunRecorder.setManualPause`, 다시 시작 첫 점은 `TrackPoint.breakBefore`라 그 사이 거리·시간 제외) + 「운동 종료」(길게 누름)
-  - 앱 전체 어두운 테마(`values/colors.xml`, `Theme.Material3.Dark`), 기록 화면 지도는 어두운 색(`ui/MapPanel.kt` 색 행렬)
-- - 백그라운드 점검: `.github/screens.sh` 끝부분이 에뮬레이터에서 기록 시작 → 홈 → 화면 잠금 동안 위치를 움직이고 알림 문구를 `ci-screens`의 `bg_1~3*.txt`로 남김(거리가 늘어야 정상)
-- 사진 받기: `tools/photos.txt`(이름 사진ID)를 고쳐 푸시하면 `.github/workflows/photos.yml`이 `ci-photos` 브랜치 `final/`에 받아 둠 → 그 파일을 `app/src/main/res/drawable-nodpi/`에 복사해 커밋
+- 배포: v0.3.1 (versionCode 4). main에는 0.3.2용 변경이 쌓여 있음(아래), 확인 후 versionCode 5 / 0.3.2로 배포 예정
+- main 변경(0.3.1 이후):
+  - 잠금 화면: 달리는 중이면 `MainActivity`가 잠금 위에 보임(`showOnLockScreen`), 알림은 어두운 카드(`res/layout/notif_run_small|big.xml`, 흐르는 Chronometer)
+  - 시간: 운동 시간은 모두 `SystemClock.elapsedRealtime` 하나로(`RunRecorder.Snapshot.activeMs/activeNow`), 앱은 초 경계에 맞춰 갱신, 알림 Chronometer와 같은 기준점. 인터벌도 운동 시간 기준(일시정지하면 멈춤)
+  - 걸음: 휴대폰 걸음 센서(`logic/Steps.kt` StepTracker, `RecordingService.startSteps`), 케이던스 140 이상이면 뛰기(`MotionClassifier.onCadence`), 기록에 `Run.steps` 저장
+  - 몇 km째·구간 페이스(`logic/RunStats.kt`의 `Lap`)를 달리는 중 화면·알림에 표시
+  - 안드로이드 16 이상 + 실시간 알림 허용이면 표준 알림 + 상태 표시줄 칩(`RecordingService.liveUpdate`, 이름으로 찾아 부르는 setRequestPromotedOngoing/setShortCriticalText), 아니면 어두운 카드
+- 점검: `screens.yml`의 `screens`(API 34: 화면, 일시정지 `pause_check.txt`, 시간 일치 `time_check.txt`)와 `screens36`(API 36: 실시간 알림 칩, `ci-screens36` 브랜치)
+- 사진 받기: `tools/photos.txt`를 고쳐 푸시하면 `photos.yml`이 `ci-photos` 브랜치 `final/`에 받아 둠 → `res/drawable-nodpi/`에 복사
 
 ## 다음 할 일
 
-1. 에뮬레이터 일시정지 점검 결과는 `ci-screens`의 `pause_check.txt`(9단계: 시간이 줄지 않아야 함). 9c0bfae에서 모두 통과
-2. 사용자 휴대폰 확인 결과 반영(GPS·음성·배터리·화면)
-3. 포털 중간 점검 2차 제출(0.2~0.3 내용)
-5. 1주일 실사용(나 + 친구 2명) 후 최종 제출 — 완성 기준은 `docs/plan.md`
+1. `ci-screens`의 `time_check.txt`(앱·알림 시간 차이 ±1초 이내, 실제 30초=화면 30초)와 `ci-screens36`의 칩 캡처 확인
+2. 문제 없으면 versionCode 5 / versionName 0.3.2로 배포
+3. 사용자 휴대폰 기종·One UI 버전 답 반영(초록 칩 지원 범위)
+4. 다른 앱과 정확도 비교 방법 정리(같은 코스에서 런메이트·삼성 헬스 동시 기록 → 거리·걸음·시간 비교)
+5. 포털 중간 점검 2차 제출(0.2~0.3), 1주일 실사용 후 최종 제출(`docs/plan.md`)
 6. (나중에) 포트폴리오 myprofile에 웹 화면 연결 — 사용자가 미룸
