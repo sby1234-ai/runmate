@@ -27,9 +27,9 @@
 | 릴리스 | `app/build.gradle.kts`의 `versionName`을 올려 main에 푸시하면 그 버전 릴리스가 자동 생성(태그 푸시는 막혀 있음). 서명 키는 GitHub Secrets에만 있음 |
 | 웹 화면 | `web/` 폴더가 바뀌면 `.github/workflows/pages.yml`이 GitHub Pages로 배포 |
 
-## 지금 상태 (2026-10-29 19:35)
+## 지금 상태 (2026-10-29 20:00)
 
-- 배포: **v0.3.0** (versionCode 3) — 시안 UI, 날씨, 수동 일시정지, 백그라운드·잠금 화면 기록 유지(WakeLock·배치 없는 위치·배터리 최적화 제외 요청·잠금 화면 알림), GPS 속도 0 보정(`MotionClassifier.pickSpeed`)
+- 배포: **v0.3.1** (versionCode 4) — 일시정지 버그 수정(자동·수동을 `PauseTracker` 하나로, 멈춤이면 「다시 시작」, 다시 시작 뒤 15초 자동 일시정지 없음, 최근 10초 12m 이동 시 멈춤 아님 `MotionClassifier.movedRecently`). 이전 v0.3.0 (versionCode 3) — 시안 UI, 날씨, 수동 일시정지, 백그라운드·잠금 화면 기록 유지(WakeLock·배치 없는 위치·배터리 최적화 제외 요청·잠금 화면 알림), GPS 속도 0 보정(`MotionClassifier.pickSpeed`)
 - UI(사용자 시안: 어두운 유리 + 사진 배경)
   - 첫 화면: 날씨별 사진 배경(`res/drawable-nodpi/bg_<날씨>_<번호>.jpg`, Unsplash 무료, 출처 `docs/PHOTOS.md`, 하루마다 다른 사진), 사진이 없으면 `ui/SkyView.kt` 그라데이션. 날씨는 Open-Meteo(위치 소수점 첫째 자리만 전송, 설정에서 끔)
   - 기능 타일 6개(어두운 유리), 가로로 긴 「달리기 시작」 버튼
@@ -40,7 +40,7 @@
 
 ## 다음 할 일
 
-1. `ci-screens`의 `bg_*.txt`에서 1200ac6 이후에도 잠금 상태에서 "자동 일시정지"가 아닌지 확인
+1. 에뮬레이터 일시정지 점검 결과는 `ci-screens`의 `pause_check.txt`(9단계: 시간이 줄지 않아야 함). 9c0bfae에서 모두 통과
 2. 사용자 휴대폰 확인 결과 반영(GPS·음성·배터리·화면)
 3. 포털 중간 점검 2차 제출(0.2~0.3 내용)
 5. 1주일 실사용(나 + 친구 2명) 후 최종 제출 — 완성 기준은 `docs/plan.md`
