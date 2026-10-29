@@ -18,6 +18,7 @@ object RunStore {
             arr.put(JSONArray().apply {
                 put(p.time); put(p.lat); put(p.lon)
                 put(p.speed?.toDouble() ?: JSONObject.NULL); put(p.accuracy.toDouble()); put(p.motion.name)
+                if (p.breakBefore) put(1)
             })
         }
         val json = JSONObject().put("version", 1).put("id", run.id).put("points", arr)
@@ -45,6 +46,7 @@ object RunStore {
                     speed = if (a.isNull(3)) null else a.getDouble(3).toFloat(),
                     accuracy = a.getDouble(4).toFloat(),
                     motion = runCatching { Motion.valueOf(a.getString(5)) }.getOrDefault(Motion.WALK),
+                    breakBefore = a.length() > 6 && a.optInt(6, 0) == 1,
                 ))
             }
             Run(o.getLong("id"), pts)

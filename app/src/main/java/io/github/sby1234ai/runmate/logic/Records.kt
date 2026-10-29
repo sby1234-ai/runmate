@@ -17,7 +17,7 @@ object Records {
         for (i in 1 until n) {
             val a = points[i - 1]; val b = points[i]
             val dt = b.time - a.time
-            val seg = if (dt <= 0 || dt > 30_000) 0.0 else Geo.distance(a.lat, a.lon, b.lat, b.lon)
+            val seg = if (dt <= 0 || dt > 30_000 || b.breakBefore) 0.0 else Geo.distance(a.lat, a.lon, b.lat, b.lon)
             d[i] = d[i - 1] + seg; t[i] = b.time
         }
         if (d[n - 1] < meters) return null

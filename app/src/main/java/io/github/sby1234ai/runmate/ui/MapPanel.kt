@@ -50,17 +50,23 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
             configure(ctx)
             map = MapView(ctx).also { m ->
                 m.setTileSource(TileSourceFactory.MAPNIK)
-                // 기본 지도는 색이 많아 경로가 묻히므로, 색을 거의 빼고 밝게 눌러 경로만 돋보이게 합니다
-                val cm = ColorMatrix().apply { setSaturation(0.12f) }
+                // 시안처럼 어두운 지도: 기본 지도의 색을 거의 빼고 밝기를 뒤집은 뒤 남색으로 살짝 물들입니다
+                val cm = ColorMatrix().apply { setSaturation(0.10f) }
                 cm.postConcat(ColorMatrix(floatArrayOf(
-                    0.80f, 0f, 0f, 0f, 46f,
-                    0f, 0.80f, 0f, 0f, 48f,
-                    0f, 0f, 0.82f, 0f, 52f,
+                    -1f, 0f, 0f, 0f, 255f,
+                    0f, -1f, 0f, 0f, 255f,
+                    0f, 0f, -1f, 0f, 255f,
+                    0f, 0f, 0f, 1f, 0f,
+                )))
+                cm.postConcat(ColorMatrix(floatArrayOf(
+                    0.62f, 0f, 0f, 0f, 8f,
+                    0f, 0.68f, 0f, 0f, 14f,
+                    0f, 0f, 0.78f, 0f, 24f,
                     0f, 0f, 0f, 1f, 0f,
                 )))
                 m.overlayManager.tilesOverlay.setColorFilter(ColorMatrixColorFilter(cm))
-                m.overlayManager.tilesOverlay.setLoadingBackgroundColor(0xFFEEF1F3.toInt())
-                m.overlayManager.tilesOverlay.setLoadingLineColor(0xFFEEF1F3.toInt())
+                m.overlayManager.tilesOverlay.setLoadingBackgroundColor(0xFF151D25.toInt())
+                m.overlayManager.tilesOverlay.setLoadingLineColor(0xFF151D25.toInt())
                 m.setMultiTouchControls(true)
                 m.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 m.isTilesScaledToDpi = true
@@ -107,7 +113,7 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
                 // 흰 테두리 선을 먼저 깔아 경로가 지도 위에서 또렷하게 보이게 합니다
                 val casing = Polyline(m)
                 casing.outlinePaint.apply {
-                    color = 0xFFFFFFFF.toInt()
+                    color = 0xCC0B1016.toInt()
                     strokeWidth = (if (mo == Motion.STILL) 6f else 9.5f) * density
                     strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; isAntiAlias = true
                 }

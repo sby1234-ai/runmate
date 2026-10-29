@@ -48,15 +48,18 @@
                 android:textSize="14sp" android:textColor="#FFFFFFFF" />
 
             <!-- 시작 버튼 -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnStart"
-                android:layout_width="132dp" android:layout_height="132dp"
-                android:layout_gravity="center_horizontal" android:layout_marginTop="30dp"
-                android:insetTop="0dp" android:insetBottom="0dp" android:insetLeft="0dp" android:insetRight="0dp"
-                android:text="시작" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/ink"
-                app:icon="@drawable/ic_play" app:iconGravity="textStart" app:iconSize="24dp" app:iconPadding="6dp" app:iconTint="@color/run"
-                app:cornerRadius="66dp" app:backgroundTint="#EBFFFFFF" android:elevation="12dp"
-                app:strokeColor="#80FFFFFF" app:strokeWidth="1dp" />
+            <!-- 시안: 가로로 긴 어두운 유리 버튼 -->
+            <LinearLayout android:id="@+id/btnStart"
+                android:layout_width="match_parent" android:layout_height="68dp"
+                android:layout_marginTop="34dp" android:layout_marginHorizontal="28dp"
+                android:orientation="horizontal" android:gravity="center"
+                android:background="@drawable/bg_pill_glass" android:elevation="8dp"
+                android:clickable="true" android:focusable="true" android:contentDescription="달리기 시작">
+                <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_play"
+                    android:importantForAccessibility="no" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp"
+                    android:text="달리기 시작" android:textSize="21sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+            </LinearLayout>
             <TextView android:id="@+id/weekLine" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" android:layout_marginTop="14dp"
                 android:textSize="14sp" android:textColor="#F2FFFFFF" android:fontFeatureSettings="tnum" />
@@ -66,7 +69,7 @@
 
             <LinearLayout android:id="@+id/setupCard"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:orientation="vertical" android:background="@drawable/bg_tile"
+                android:layout_marginTop="6dp" android:orientation="vertical" android:background="@drawable/bg_tile"
                 android:padding="16dp" android:visibility="gone">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="기록이 끊기지 않게 하려면" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/ink" />
@@ -75,7 +78,7 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBattery" style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
-                    android:text="배터리 설정 열기" android:textColor="@color/ink" />
+                    android:text="배터리 설정 열기  ›" android:textColor="#FFFFFFFF" app:strokeColor="#4DFFFFFF" />
             </LinearLayout>
 
             <TextView android:id="@+id/credit" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -105,7 +108,7 @@
             </LinearLayout>
 
             <io.github.sby1234ai.runmate.ui.RunnerView android:id="@+id/runner"
-                android:layout_width="150dp" android:layout_height="150dp" android:layout_marginTop="12dp" />
+                android:layout_width="104dp" android:layout_height="104dp" android:layout_marginTop="18dp" />
 
             <TextView android:id="@+id/time" style="@style/Num"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
@@ -125,7 +128,7 @@
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="20dp" android:background="@drawable/bg_glass"
+                android:orientation="horizontal" android:layout_marginTop="22dp" android:background="@drawable/bg_glass" android:divider="@drawable/divider_v" android:showDividers="middle"
                 android:paddingVertical="14dp" android:paddingHorizontal="8dp">
                 <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
                     android:orientation="vertical" android:gravity="center_horizontal">
@@ -156,15 +159,29 @@
 
             <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="20dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnStop"
-                android:layout_width="104dp" android:layout_height="104dp" android:layout_marginTop="20dp"
-                android:insetTop="0dp" android:insetBottom="0dp" android:insetLeft="0dp" android:insetRight="0dp"
-                android:text="정지" android:textSize="22sp" android:textStyle="bold" android:textColor="#FFFFFFFF"
-                app:cornerRadius="52dp" app:backgroundTint="@color/run"
-                app:strokeColor="#40FFFFFF" app:strokeWidth="8dp" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
-                android:text="길게 눌러 정지" android:textSize="13sp" android:textColor="#CCFFFFFF" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+                android:orientation="horizontal" android:layout_marginTop="20dp">
+                <LinearLayout android:id="@+id/btnPause"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:layout_marginEnd="6dp" android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/bg_pill_pause" android:clickable="true" android:focusable="true">
+                    <ImageView android:id="@+id/pauseIcon" android:layout_width="20dp" android:layout_height="20dp"
+                        android:src="@drawable/ic_pause_bars" android:importantForAccessibility="no" />
+                    <TextView android:id="@+id/pauseText" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp" android:text="일시정지" android:textSize="17sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+                </LinearLayout>
+                <LinearLayout android:id="@+id/btnStop"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:layout_marginStart="6dp" android:orientation="horizontal" android:gravity="center"
+                    android:background="@drawable/bg_pill_stop" android:clickable="true" android:focusable="true">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_stop"
+                        android:importantForAccessibility="no" app:tint="@color/run" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp" android:text="운동 종료" android:textSize="17sp" android:textStyle="bold" android:textColor="#FFFF8A6B" />
+                </LinearLayout>
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:text="실수로 끝나지 않게, 운동 종료는 길게 누르세요" android:textSize="13sp" android:textColor="#B3FFFFFF" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

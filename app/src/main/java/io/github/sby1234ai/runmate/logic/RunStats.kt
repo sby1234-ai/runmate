@@ -34,7 +34,7 @@ object RunStats {
             val dt = b.time - a.time
             if (dt <= 0) continue
             val d = Geo.distance(a.lat, a.lon, b.lat, b.lon)
-            if (dt > GAP_MS) continue
+            if (dt > GAP_MS || b.breakBefore) continue
             dist += d
             when (b.motion) {
                 Motion.RUN -> { runD += d; runT += dt; moving += dt }

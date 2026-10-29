@@ -8,6 +8,8 @@ data class TrackPoint(
     val speed: Float?,
     val accuracy: Float,
     val motion: Motion,
+    /** 일시정지했다가 다시 시작한 첫 점이면 true: 앞 점과의 사이는 거리·시간에 넣지 않습니다. */
+    val breakBefore: Boolean = false,
 )
 
 enum class Motion(val label: String) { STILL("멈춤"), WALK("걷기"), RUN("뛰기") }

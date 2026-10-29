@@ -90,10 +90,14 @@ class MainActivity : AppCompatActivity() {
         intervalNow = findViewById(R.id.intervalNow)
 
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        findViewById<MaterialButton>(R.id.btnStart).setOnClickListener { startRecording() }
-        val stop = findViewById<MaterialButton>(R.id.btnStop)
+        findViewById<View>(R.id.btnStart).setOnClickListener { startRecording() }
+        findViewById<View>(R.id.btnPause).setOnClickListener {
+            val s = RunRecorder.snapshot()
+            if (s.recording) RecordingService.pause(this, !s.manualPaused)
+        }
+        val stop = findViewById<View>(R.id.btnStop)
         stop.setOnClickListener {
-            Toast.makeText(this, "실수로 멈추지 않도록, 정지는 길게 누르세요", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "실수로 끝나지 않도록, 운동 종료는 길게 누르세요", Toast.LENGTH_SHORT).show()
         }
         stop.setOnLongClickListener {
             if (RunRecorder.recording) { RecordingService.stop(this); true } else false
@@ -169,7 +173,6 @@ class MainActivity : AppCompatActivity() {
         sky.setWeather(skyNow, night)
         currentSky = skyNow; currentNight = night
         applyBackground()
-        darkTiles = sky.photo || night || skyNow == Sky.RAIN || skyNow == Sky.STORM
         styleTiles()
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = false
@@ -235,9 +238,10 @@ class MainActivity : AppCompatActivity() {
         val grid = findViewById<GridLayout>(R.id.tiles)
         for (i in 0 until grid.childCount) {
             val v = grid.getChildAt(i)
-            v.setBackgroundResource(if (darkTiles) R.drawable.bg_tile_dark else R.drawable.bg_tile)
-            v.findViewById<TextView>(R.id.title).setTextColor(if (darkTiles) 0xFFFFFFFF.toInt() else ContextCompat.getColor(this, R.color.ink))
-            v.findViewById<TextView>(R.id.sub).setTextColor(if (darkTiles) 0xB3FFFFFF.toInt() else ContextCompat.getColor(this, R.color.sub))
+            // 시안: 사진 위에는 항상 어두운 유리 카드에 흰 글자
+            v.setBackgroundResource(R.drawable.bg_tile_dark)
+            v.findViewById<TextView>(R.id.title).setTextColor(0xFFFFFFFF.toInt())
+            v.findViewById<TextView>(R.id.sub).setTextColor(0xB3FFFFFF.toInt())
         }
     }
 
@@ -268,9 +272,11 @@ class MainActivity : AppCompatActivity() {
         val gap = (6 * resources.displayMetrics.density).toInt()
         val views = tiles.map { t ->
             val v = LayoutInflater.from(this).inflate(R.layout.item_tile, grid, false)
-            v.findViewById<View>(R.id.iconBg).background.mutate().setTint(ContextCompat.getColor(this, t.color))
+            // 아이콘: 반투명 색 동그라미 안에 그 색 아이콘
+            val c = ContextCompat.getColor(this, t.color)
+            v.findViewById<View>(R.id.iconBg).background.mutate().setTint((c and 0x00FFFFFF) or 0x40000000)
             v.findViewById<ImageView>(R.id.icon).apply {
-                setImageResource(t.icon); imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
+                setImageResource(t.icon); imageTintList = ColorStateList.valueOf(c)
             }
             v.findViewById<TextView>(R.id.title).text = t.title
             v.findViewById<TextView>(R.id.sub).text = t.sub
@@ -322,7 +328,7 @@ class MainActivity : AppCompatActivity() {
     private fun renderTime(s: RunRecorder.Snapshot) {
         val now = System.currentTimeMillis()
         val auto = Prefs.autoPause(this)
-        timeView.text = Format.duration(if (auto) s.activeMs(now) else (s.endedAt ?: now) - s.startedAt)
+        timeView.text = Format.duration(if (auto) s.activeMs(now) else s.elapsedMs(now))
         timeLabel.text = if (auto) "운동 시간 (멈춘 시간 제외)" else "전체 시간"
     }
 
@@ -345,22 +351,27 @@ class MainActivity : AppCompatActivity() {
         sky.dim = s.recording
         if (running != s.recording) { running = s.recording; applyBackground() }
 
-        val paused = s.recording && s.paused && Prefs.autoPause(this)
-        val (label, color, tint) = when {
-            paused -> Triple("자동 일시정지", R.color.still, R.color.still_tint)
-            s.motion == Motion.RUN -> Triple("뛰는 중", R.color.run, R.color.run_tint)
-            s.motion == Motion.WALK -> Triple("걷는 중", R.color.walk, R.color.walk_tint)
-            else -> Triple("멈춤", R.color.still, R.color.still_tint)
+        val autoPaused = s.recording && s.paused && Prefs.autoPause(this)
+        val paused = s.manualPaused || autoPaused
+        // 상태 칩: 뛰기는 주홍, 걷기는 청록, 멈춤은 반투명
+        val (label, chip) = when {
+            s.manualPaused -> "일시정지" to 0x66141B24
+            autoPaused -> "자동 일시정지" to 0x66141B24
+            s.motion == Motion.RUN -> "뛰는 중" to ContextCompat.getColor(this, R.color.run)
+            s.motion == Motion.WALK -> "걷는 중" to ContextCompat.getColor(this, R.color.walk)
+            else -> "멈춤" to 0x66141B24
         }
         motionView.text = label
-        motionView.setTextColor(ContextCompat.getColor(this, color))
-        motionView.background.mutate().setTint(ContextCompat.getColor(this, tint))
+        motionView.setTextColor(0xFFFFFFFF.toInt())
+        motionView.background.mutate().setTint(chip)
+        findViewById<TextView>(R.id.pauseText).text = if (s.manualPaused) "다시 시작" else "일시정지"
+        findViewById<ImageView>(R.id.pauseIcon).setImageResource(if (s.manualPaused) R.drawable.ic_play else R.drawable.ic_pause_bars)
         runner.motion = s.motion
         runner.paused = paused
         runner.ringColor = when {
             paused -> 0x33FFFFFF
             s.motion == Motion.RUN -> 0xF2F2542D.toInt()
-            s.motion == Motion.WALK -> 0xF21B998B.toInt()
+            s.motion == Motion.WALK -> 0xF21FB3A2.toInt()
             else -> 0x33FFFFFF
         }
 

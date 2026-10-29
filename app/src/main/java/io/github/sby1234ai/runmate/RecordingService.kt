@@ -41,12 +41,18 @@ class RecordingService : Service() {
     companion object {
         private const val ACTION_START = "start"
         private const val ACTION_STOP = "stop"
+        private const val ACTION_PAUSE = "pause"
+        private const val ACTION_RESUME = "resume"
         private const val CHANNEL = "recording"
         private const val NOTIF_ID = 1
         private const val AR_REQUEST = 7
 
         fun start(ctx: Context) {
             ContextCompat.startForegroundService(ctx, Intent(ctx, RecordingService::class.java).setAction(ACTION_START))
+        }
+
+        fun pause(ctx: Context, on: Boolean) {
+            ctx.startService(Intent(ctx, RecordingService::class.java).setAction(if (on) ACTION_PAUSE else ACTION_RESUME))
         }
 
         fun stop(ctx: Context) {
@@ -85,6 +91,8 @@ class RecordingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP -> finish()
+            ACTION_PAUSE -> { RunRecorder.setManualPause(true, System.currentTimeMillis()); voice?.say("일시정지했습니다."); updateNotification() }
+            ACTION_RESUME -> { RunRecorder.setManualPause(false, System.currentTimeMillis()); voice?.say("다시 시작합니다."); updateNotification() }
             else -> begin()
         }
         return START_NOT_STICKY
@@ -190,8 +198,8 @@ class RecordingService : Service() {
     private fun updateNotification() {
         val s = RunRecorder.snapshot()
         val now = System.currentTimeMillis()
-        val time = if (Prefs.autoPause(this)) s.activeMs(now) else now - s.startedAt
-        val state = if (Prefs.autoPause(this) && s.paused) "일시정지" else "지금 ${s.motion.label}"
+        val time = if (Prefs.autoPause(this)) s.activeMs(now) else s.elapsedMs(now)
+        val state = if (s.manualPaused || (Prefs.autoPause(this) && s.paused)) "일시정지" else "지금 ${s.motion.label}"
         val text = "${Format.km(s.stats.distance)} km · ${Format.duration(time)} · $state"
         getSystemService(NotificationManager::class.java).notify(NOTIF_ID, buildNotification(text))
     }
