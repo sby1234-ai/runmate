@@ -53,6 +53,11 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }
+        val swUpdate = findViewById<MaterialSwitch>(R.id.swUpdate)
+        swUpdate.isChecked = Updater.enabled(this)
+        swUpdate.setOnCheckedChangeListener { _, v -> Updater.setEnabled(this, v) }
+        findViewById<MaterialButton>(R.id.btnCheckUpdate).setOnClickListener { Updater.check(this, quiet = false) }
+
         findViewById<MaterialButton>(R.id.btnDevOptions).setOnClickListener {
             try { startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
             catch (e: Exception) { Toast.makeText(this, "개발자 옵션이 아직 켜져 있지 않습니다. 빌드 번호를 7번 눌러 켜 주세요", Toast.LENGTH_LONG).show() }

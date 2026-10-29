@@ -140,6 +140,9 @@ class MainActivity : AppCompatActivity() {
         ticker.post(tick)
         renderHome()
         loadWeather()
+        // 새 버전: 허용 화면에서 돌아왔으면 설치를 이어 가고, 하루 한 번 확인
+        Updater.resumePending(this)
+        if (!BuildConfig.DEBUG) Updater.checkDaily(this)
         // 휴대폰이 앱을 강제로 꺼서 멈춘 기록이 있으면 그 자리부터 이어서 기록
         if (!RunRecorder.recording && io.github.sby1234ai.runmate.data.CheckpointStore.exists(this) && hasFine()) {
             RecordingService.restore(this)
@@ -502,6 +505,8 @@ class MainActivity : AppCompatActivity() {
             "runs" -> startActivity(Intent(this, RunsActivity::class.java))
             "settings" -> startActivity(Intent(this, SettingsActivity::class.java))
             "record" -> RecordingService.start(this)   // 실제 기록 시작(에뮬레이터 위치로 백그라운드 점검)
+            "update" -> Updater.check(this, quiet = false, currentOverride = "0.0.1", autoConfirm = true)
+            "updateAsk" -> Updater.check(this, quiet = false, currentOverride = "0.0.1")
             "pause" -> RecordingService.pause(this, true)
             "resume" -> RecordingService.pause(this, false)
         }
