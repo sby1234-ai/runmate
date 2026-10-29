@@ -308,10 +308,10 @@ class MainActivity : AppCompatActivity() {
         runner.motion = s.motion
         runner.paused = paused
         runner.ringColor = when {
-            paused -> 0x26FFFFFF
-            s.motion == Motion.RUN -> 0x55F2542D
-            s.motion == Motion.WALK -> 0x551B998B
-            else -> 0x26FFFFFF
+            paused -> 0x33FFFFFF
+            s.motion == Motion.RUN -> 0xF2F2542D.toInt()
+            s.motion == Motion.WALK -> 0xF21B998B.toInt()
+            else -> 0x33FFFFFF
         }
 
         if (s.recording) { renderTime(s); renderInterval(s) }

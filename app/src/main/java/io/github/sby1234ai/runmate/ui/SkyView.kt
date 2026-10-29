@@ -39,6 +39,8 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
     private val cloudS = floatArrayOf(1.0f, 0.75f, 1.2f, 0.6f)
     private val cloudV = floatArrayOf(0.010f, 0.016f, 0.007f, 0.013f)
 
+    // 구름 한 덩이: 가운데는 하얗고 가장자리로 갈수록 투명해지는 부드러운 원(크기는 그릴 때 늘림)
+    private val puff = RadialGradient(0f, 0f, 1f, intArrayOf(0xFFFFFFFF.toInt(), 0xB3FFFFFF.toInt(), 0x00FFFFFF), floatArrayOf(0f, 0.45f, 1f), Shader.TileMode.CLAMP)
     private val bg = Paint()
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     private var shaderKey = ""
@@ -77,20 +79,22 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
         canvas.drawRect(0f, 0f, w, h, bg)
         val t = SystemClock.uptimeMillis() / 1000f
 
-        if (night) drawStars(canvas, w, h, t)
-        else if (sky == Sky.CLEAR || sky == Sky.PARTLY) drawSun(canvas, w, h, t)
+        // 달리는 중(dim)에는 숫자가 잘 보이게 해·달·구름은 빼고 별·비·눈만 남깁니다
+        if (night) drawStars(canvas, w, h, t, moon = !dim)
+        else if (!dim && (sky == Sky.CLEAR || sky == Sky.PARTLY)) drawSun(canvas, w, h, t)
+        val clouds = !dim
         when (sky) {
-            Sky.PARTLY -> drawClouds(canvas, w, h, t, 2, 0.75f)
-            Sky.CLOUDY, Sky.FOG -> drawClouds(canvas, w, h, t, 4, 0.55f)
-            Sky.RAIN -> { drawClouds(canvas, w, h, t, 4, 0.35f); drawRain(canvas, w, h, t, 70) }
-            Sky.STORM -> { drawClouds(canvas, w, h, t, 4, 0.25f); drawRain(canvas, w, h, t, 90); drawFlash(canvas, w, h, t) }
-            Sky.SNOW -> { drawClouds(canvas, w, h, t, 3, 0.45f); drawSnow(canvas, w, h, t) }
+            Sky.PARTLY -> if (clouds) drawClouds(canvas, w, h, t, 2, 0.55f)
+            Sky.CLOUDY, Sky.FOG -> if (clouds) drawClouds(canvas, w, h, t, 4, 0.42f)
+            Sky.RAIN -> { if (clouds) drawClouds(canvas, w, h, t, 4, 0.22f); drawRain(canvas, w, h, t, 70) }
+            Sky.STORM -> { if (clouds) drawClouds(canvas, w, h, t, 4, 0.18f); drawRain(canvas, w, h, t, 90); drawFlash(canvas, w, h, t) }
+            Sky.SNOW -> { if (clouds) drawClouds(canvas, w, h, t, 3, 0.30f); drawSnow(canvas, w, h, t) }
             else -> {}
         }
         if (sky == Sky.FOG) { p.shader = null; p.color = 0x40FFFFFF; canvas.drawRect(0f, h * 0.45f, w, h, p) }
         if (dim) { p.shader = null; p.color = 0x59000000; canvas.drawRect(0f, 0f, w, h, p) }
 
-        if (isShown) postInvalidateDelayed(40)
+        if (isShown) postInvalidateDelayed(50)
     }
 
     private fun drawSun(c: Canvas, w: Float, h: Float, t: Float) {
@@ -103,30 +107,41 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
         c.drawCircle(cx, cy, 26 * d, p)
     }
 
-    private fun drawStars(c: Canvas, w: Float, h: Float, t: Float) {
+    private fun drawStars(c: Canvas, w: Float, h: Float, t: Float, moon: Boolean) {
         p.shader = null
         for (i in starX.indices) {
             val a = (0.35f + 0.65f * (0.5f + 0.5f * sin(t * 1.3f + starP[i]))) * 255
             p.color = (a.toInt() shl 24) or 0xFFFFFF
             c.drawCircle(starX[i] * w, starY[i] * h, (if (i % 7 == 0) 1.8f else 1.1f) * d, p)
         }
-        // 달
+        if (!moon) return
+        val mx = w * 0.80f; val my = h * 0.11f
+        p.shader = RadialGradient(mx, my, 70 * d, intArrayOf(0x40F4F1E4, 0x00F4F1E4), null, Shader.TileMode.CLAMP)
+        c.drawCircle(mx, my, 70 * d, p)
+        p.shader = null
         p.color = 0xF2F4F1E4.toInt()
-        c.drawCircle(w * 0.80f, h * 0.11f, 20 * d, p)
+        c.drawCircle(mx, my, 20 * d, p)
     }
 
     private fun drawClouds(c: Canvas, w: Float, h: Float, t: Float, n: Int, alpha: Float) {
-        p.shader = null
-        p.color = ((alpha * 255).toInt() shl 24) or 0xFFFFFF
+        p.shader = puff
+        p.alpha = (alpha * 255).toInt()
         for (i in 0 until n) {
-            val s = cloudS[i] * w * 0.32f
-            val span = w + s * 2
-            val x = ((cloudV[i] * t * w + i * w * 0.37f) % span) - s
+            val s = cloudS[i] * w * 0.30f
+            val span = w + s * 3
+            val x = ((cloudV[i] * t * w + i * w * 0.41f) % span) - s * 1.5f
             val y = cloudY[i] * h
-            c.drawOval(x - s * 0.6f, y - s * 0.16f, x + s * 0.6f, y + s * 0.16f, p)
-            c.drawCircle(x - s * 0.2f, y - s * 0.12f, s * 0.22f, p)
-            c.drawCircle(x + s * 0.15f, y - s * 0.18f, s * 0.28f, p)
+            puffAt(c, x - s * 0.55f, y + s * 0.05f, s * 0.42f)
+            puffAt(c, x, y - s * 0.12f, s * 0.55f)
+            puffAt(c, x + s * 0.55f, y + s * 0.02f, s * 0.45f)
         }
+        p.shader = null; p.alpha = 255
+    }
+
+    private fun puffAt(c: Canvas, x: Float, y: Float, r: Float) {
+        c.save(); c.translate(x, y); c.scale(r * 1.35f, r)
+        c.drawCircle(0f, 0f, 1f, p)
+        c.restore()
     }
 
     private fun drawRain(c: Canvas, w: Float, h: Float, t: Float, n: Int) {

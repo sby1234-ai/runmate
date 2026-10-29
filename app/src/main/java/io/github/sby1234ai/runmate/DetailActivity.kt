@@ -54,8 +54,15 @@ class DetailActivity : AppCompatActivity() {
         p.setPoints(r.points, follow = false)
         p.fitAll()
         panel = p
-        findViewById<TextView>(R.id.legend).text =
-            (if (p.useMap) "지도 © OpenStreetMap 기여자 · " else "") + "주홍 = 뛰기   청록 = 걷기   회색 = 멈춤"
+        // 범례: 동그라미만 각 색으로 칠합니다
+        val legend = android.text.SpannableStringBuilder()
+        for ((label, color) in listOf("뛰기" to R.color.run, "걷기" to R.color.walk, "멈춤" to R.color.still)) {
+            val start = legend.length
+            legend.append("●")
+            legend.setSpan(android.text.style.ForegroundColorSpan(ContextCompat.getColor(this, color)), start, start + 1, 0)
+            legend.append(" $label    ")
+        }
+        findViewById<TextView>(R.id.legend).text = legend
 
         val grid = findViewById<GridLayout>(R.id.grid)
         fun cell(label: String, value: String, color: Int = R.color.ink) {
