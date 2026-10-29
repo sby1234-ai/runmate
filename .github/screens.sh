@@ -26,7 +26,7 @@ go --es demo settings;             shot 13_settings 3
 adb logcat -d -s AndroidRuntime:E > shots/crash.txt || true
 ls -la shots
 
-# ── 백그라운드·잠금 화면에서도 기록이 이어지는지 점검 ──
+# ── 백그라운드·잠금 화면, 일시정지·다시 시작 점검 ──
 adb shell dumpsys deviceidle whitelist +$P >/dev/null 2>&1 || true   # 배터리 최적화 창이 뜨지 않게(점검 전용)
 adb shell am force-stop $P
 LAT=35.85300; LON=128.55800
@@ -34,16 +34,22 @@ adb emu geo fix $LON $LAT
 go --es demo record
 sleep 6
 move() { for k in $(seq 1 "$1"); do LAT=$(python3 -c "print(round($LAT+0.000025,6))"); adb emu geo fix $LON $LAT >/dev/null; sleep 1; done; }
-move 10
-adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_1_foreground.txt
+stay() { for k in $(seq 1 "$1"); do adb emu geo fix $LON $LAT >/dev/null; sleep 1; done; }
+note() { T=$(adb shell dumpsys notification --noredact | grep -A1 "android.title=" | grep -m1 -o "런메이트[^)]*"); X=$(adb shell dumpsys notification --noredact | grep -m1 -o "android.text=String ([^)]*"); echo "$1 | $T | ${X#android.text=String (}" >> shots/pause_check.txt; }
+send() { adb shell am start -n $P/.MainActivity --es demo "$1" >/dev/null; sleep 1; }
+: > shots/pause_check.txt
+move 12;               note "1 달리는 중(앱 화면)"
 adb shell input keyevent KEYCODE_HOME
-move 15
-adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_2_home.txt
+move 12;               note "2 홈으로 나감"
 adb shell input keyevent KEYCODE_SLEEP
-move 25
-adb shell dumpsys notification --noredact | grep -A2 "android.text=" | grep -i "km" | head -1 > shots/bg_3_locked.txt
+move 15;               note "3 화면 잠금"
 adb shell input keyevent KEYCODE_WAKEUP
-sleep 2
-shot 14_lockscreen 1
-adb shell dumpsys notification --noredact | grep -B2 -A12 "pkg=$P" | head -60 > shots/bg_notification_dump.txt
-cat shots/bg_*.txt
+send pause; move 6;    note "4 일시정지 직후"
+move 8;                note "5 일시정지 8초 뒤(시간·거리 그대로여야 함)"
+shot 15_paused 1
+send resume; move 8;   note "6 다시 시작 8초 뒤(시간 흐름)"
+move 8;                note "7 다시 시작 16초 뒤"
+stay 30;               note "8 30초 멈춰 섬(자동 일시정지)"
+shot 16_autopaused 1
+send resume; stay 8;   note "9 자동 일시정지 중 다시 시작 8초 뒤(서 있어도 시간 흐름)"
+cat shots/pause_check.txt

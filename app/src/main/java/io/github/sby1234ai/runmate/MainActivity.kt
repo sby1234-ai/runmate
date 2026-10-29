@@ -465,6 +465,8 @@ class MainActivity : AppCompatActivity() {
             "runs" -> startActivity(Intent(this, RunsActivity::class.java))
             "settings" -> startActivity(Intent(this, SettingsActivity::class.java))
             "record" -> RecordingService.start(this)   // 실제 기록 시작(에뮬레이터 위치로 백그라운드 점검)
+            "pause" -> RecordingService.pause(this, true)
+            "resume" -> RecordingService.pause(this, false)
         }
     }
 }
