@@ -23,6 +23,8 @@ go --es demo detail;               shot 10_detail 12
 adb shell input swipe 540 1800 540 600 400; shot 11_detail_more 2
 go --es demo runs;                 shot 12_runs 5
 go --es demo settings;             shot 13_settings 3
+go --es demo share; sleep 4         # 공유 이미지(1080×1350) 그대로 가져오기
+adb pull /sdcard/Android/data/$P/files/share_check.png shots/14_share.png || true
 adb logcat -d -s AndroidRuntime:E > shots/crash.txt || true
 ls -la shots
 

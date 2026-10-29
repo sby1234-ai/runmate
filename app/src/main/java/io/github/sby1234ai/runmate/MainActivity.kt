@@ -517,6 +517,14 @@ class MainActivity : AppCompatActivity() {
                 RunRecorder.demo(part, if (demo == "run") Motion.RUN else Motion.WALK, now)
             }
             "detail" -> startActivity(Intent(this, DetailActivity::class.java).putExtra(DetailActivity.EXTRA_ID, RunStore.ids(this).first()))
+            // 공유 이미지 점검: 첫 기록의 공유 이미지를 앱 전용 폴더에 저장(에뮬레이터 점검이 가져감)
+            "share" -> RunStore.ids(this).firstOrNull()?.let { RunStore.load(this, it) }?.let { r ->
+                val title = java.text.SimpleDateFormat("M월 d일 (E) a h:mm", java.util.Locale.KOREA).format(java.util.Date(r.id))
+                val bmp = io.github.sby1234ai.runmate.ui.ShareImage.render(this, r, RunStats.of(r.points), title)
+                java.io.File(getExternalFilesDir(null), "share_check.png").outputStream()
+                    .use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                bmp.recycle()
+            }
             "runs" -> startActivity(Intent(this, RunsActivity::class.java))
             "settings" -> startActivity(Intent(this, SettingsActivity::class.java))
             "record" -> RecordingService.start(this)   // 실제 기록 시작(에뮬레이터 위치로 백그라운드 점검)

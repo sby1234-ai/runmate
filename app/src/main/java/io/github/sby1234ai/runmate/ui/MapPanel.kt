@@ -155,9 +155,15 @@ class MapPanel(private val ctx: Context, container: FrameLayout, val useMap: Boo
     fun fitAll() {
         val m = map ?: return
         if (points.size < 2) { points.firstOrNull()?.let { center(it.lat, it.lon) }; return }
-        val box = BoundingBox.fromGeoPoints(points.map { GeoPoint(it.lat, it.lon) })
+        val raw = BoundingBox.fromGeoPoints(points.map { GeoPoint(it.lat, it.lon) })
+        // 정확히 남북(또는 동서)으로만 달린 기록은 한쪽 폭이 0이라 지도 맞춤이 실패해 세계 지도처럼 넓게 보였음
+        // → 좁은 쪽을 최소 폭(약 200m)까지 넓혀서 맞춤
+        val minSpan = 0.002
+        val latPad = ((minSpan - raw.latitudeSpan) / 2).coerceAtLeast(0.0)
+        val lonPad = ((minSpan - raw.longitudeSpan) / 2).coerceAtLeast(0.0)
+        val box = BoundingBox(raw.latNorth + latPad, raw.lonEast + lonPad, raw.latSouth - latPad, raw.lonWest - lonPad)
         val doFit = {
-            if (box.latitudeSpan < 1e-4 && box.longitudeSpan < 1e-4) {
+            if (raw.latitudeSpan < 1e-4 && raw.longitudeSpan < 1e-4) {
                 m.controller.setZoom(17.0); m.controller.setCenter(box.centerWithDateLine)
             } else {
                 m.zoomToBoundingBox(box.increaseByScale(1.15f), false, (24 * density).toInt())
