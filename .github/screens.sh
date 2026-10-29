@@ -121,6 +121,13 @@ cat shots/time_check.txt
 cat shots/pause_check.txt
 adb shell locksettings clear --old 1111 || true
 
+# ── 알림의 「종료」 버튼: 앱이 열리며 기록이 끝나고 결과 화면이 떠야 함 ──
+adb shell input keyevent KEYCODE_WAKEUP; adb shell wm dismiss-keyguard || true
+adb shell dumpsys notification --noredact | grep -A3 "actions=" | grep -m1 -o "actions=[0-9]*" > shots/notif_actions.txt || true
+adb shell am start -n $P/.MainActivity -a io.github.sby1234ai.runmate.STOP >/dev/null; sleep 6
+adb shell dumpsys activity activities | grep -m1 "topResumedActivity" >> shots/notif_actions.txt || true
+shot 22_after_stop 0
+
 # ── 자동 업데이트: 가짜로 옛 버전(0.0.1)인 척해서 최신 릴리스를 찾고, 받기·SHA-256 확인 뒤 설치 화면이 뜨는지 ──
 adb shell input keyevent KEYCODE_WAKEUP; adb shell wm dismiss-keyguard || true
 adb shell am force-stop $P

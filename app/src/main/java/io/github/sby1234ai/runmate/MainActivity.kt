@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity() {
         // 잠금 화면에서 열렸을 때도 바로 잠금 위에 보이도록, 기록 중이면 첫 화면을 그리기 전에 설정
         if (RunRecorder.recording && Prefs.lockScreen(this)) showOnLockScreen(true)
         handleDemo(intent)
+        handleStop(intent)
     }
 
     override fun onResume() {
@@ -131,6 +132,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleDemo(intent)
+        handleStop(intent)
     }
 
     override fun onStart() {
@@ -479,6 +481,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ───────── 화면 점검용(디버그 빌드에서만) ─────────
+
+    /** 알림의 「종료」를 눌러 열렸으면 기록을 끝냅니다(저장되면 결과 화면이 자동으로 열림). */
+    private fun handleStop(i: Intent?) {
+        if (i?.action == RecordingService.ACTION_STOP_FROM_NOTIF && RunRecorder.recording) {
+            RecordingService.stop(this)
+            Toast.makeText(this, "기록을 끝냈습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun handleDemo(i: Intent?) {
         if (!BuildConfig.DEBUG) return

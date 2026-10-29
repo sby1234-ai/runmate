@@ -50,6 +50,8 @@ class RecordingService : Service() {
         private const val ACTION_PAUSE = "pause"
         private const val ACTION_RESUME = "resume"
         private const val ACTION_RESTORE = "restore"
+        private const val ACTION_REPOST = "repost"
+        const val ACTION_STOP_FROM_NOTIF = "io.github.sby1234ai.runmate.STOP"
         private const val RESTORE_NOTIF_ID = 2
         const val LOCK_NOTIF_ID = 3
         private const val LOCK_CHANNEL = "lockscreen"
@@ -117,6 +119,7 @@ class RecordingService : Service() {
             ACTION_PAUSE -> { RunRecorder.setManualPause(true); updateNotification() }
             ACTION_RESUME -> { RunRecorder.setManualPause(false); updateNotification() }
             ACTION_RESTORE -> begin(restore = true)
+            ACTION_REPOST -> if (RunRecorder.recording) updateNotification()
             // intent가 없으면 시스템이 강제로 껐던 서비스를 다시 살린 것: 중간 저장본에서 이어서 기록
             null -> if (intent == null) begin(restore = true) else begin()
             else -> begin()
@@ -376,7 +379,11 @@ class RecordingService : Service() {
             .setShowWhen(false)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)       // 잠금 화면에서도 내용이 보이게
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .addAction(0, if (paused) "▶ 다시 시작" else "Ⅱ 일시정지", toggle)
+            // 삼성 헬스처럼 버튼 두 개: 「일시정지/계속」 | 「종료」
+            .addAction(0, if (paused) "계속" else "일시정지", toggle)
+            .addAction(0, "종료", stopIntent())
+            // 종료하기 전에는 옆으로 밀어서 지워도 바로 다시 나타나게
+            .setDeleteIntent(repostIntent())
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
     }
@@ -455,7 +462,11 @@ class RecordingService : Service() {
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .addAction(0, if (paused) "▶ 다시 시작" else "Ⅱ 일시정지", toggle)
+            // 삼성 헬스처럼 버튼 두 개: 「일시정지/계속」 | 「종료」
+            .addAction(0, if (paused) "계속" else "일시정지", toggle)
+            .addAction(0, "종료", stopIntent())
+            // 종료하기 전에는 옆으로 밀어서 지워도 바로 다시 나타나게
+            .setDeleteIntent(repostIntent())
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
         return try {
@@ -467,6 +478,16 @@ class RecordingService : Service() {
             b.build()
         } catch (e: Exception) { n }
     }
+
+    /** 알림의 「종료」: 앱을 열어 기록을 끝내고 결과 화면을 보여 줍니다(저장도 앱에서). */
+    private fun stopIntent(): PendingIntent = PendingIntent.getActivity(this, 11,
+        Intent(this, MainActivity::class.java).setAction(ACTION_STOP_FROM_NOTIF).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    /** 알림을 밀어서 지우면 이 서비스로 신호가 와서 같은 알림을 다시 올립니다. */
+    private fun repostIntent(): PendingIntent = PendingIntent.getService(this, 12,
+        Intent(this, RecordingService::class.java).setAction(ACTION_REPOST),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     /** 알림 카드 내용. 시간은 Chronometer라 앱이 고치지 않아도 잠금 화면에서 1초마다 흐릅니다(멈춤이면 멈춤). */
     private fun runViews(layout: Int, s: RunRecorder.Snapshot): android.widget.RemoteViews {
