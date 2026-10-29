@@ -133,6 +133,8 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) bgPick.clear()
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         // 「달리기 시작」 → 준비 화면(운동·음성·자동 일시정지 고르기 → 3·2·1) → 돌아오면 기록 시작
+        bindToggle(R.id.togVoice, R.id.togVoiceSlash, R.id.togVoiceText, "음성 안내", { Prefs.voice(this) }) { Prefs.setVoice(this, it) }
+        bindToggle(R.id.togPause, R.id.togPauseSlash, R.id.togPauseText, "자동 일시정지", { Prefs.autoPause(this) }) { Prefs.setAutoPause(this, it) }
         // 달리는 중 첫 화면으로 나왔으면 같은 자리가 「달리는 중」 막대 → 누르면 달리기 화면으로
         findViewById<View>(R.id.btnStart).setOnClickListener {
             if (RunRecorder.recording) { homeWhileRunning = false; render(RunRecorder.snapshot()) }
@@ -431,6 +433,32 @@ class MainActivity : AppCompatActivity() {
         // 디버그 빌드에서만: 화면에 보인 초와 그 순간의 기기 시계(에뮬레이터 시간 일치 점검용)
         if (BuildConfig.DEBUG) android.util.Log.d("RMTIME", "app $nowE $shown")
         timeLabel.text = if (s.paused) "멈춤 — 시간이 흐르지 않습니다" else "운동 시간 (멈춘 시간 제외)"
+    }
+
+    /**
+     * 아이콘 토글: 켜짐 = 청록 칸·흰 글자·원래 크기 / 꺼짐 = 무색 칸·사선·옅은 글자·94% 크기.
+     * 누르면 색과 크기가 부드럽게 바뀌고 짧게 진동. 기록 중에는 바꿀 수 없음(다음 기록부터 적용되는 값이라 헷갈리지 않게)
+     */
+    private fun bindToggle(boxId: Int, slashId: Int, textId: Int, name: String, get: () -> Boolean, set: (Boolean) -> Unit) {
+        val box = findViewById<View>(boxId); val slash = findViewById<View>(slashId); val text = findViewById<TextView>(textId)
+        fun show(on: Boolean, animate: Boolean) {
+            io.github.sby1234ai.runmate.ui.Glass.apply(box, if (on) io.github.sby1234ai.runmate.ui.GlassKind.ON else io.github.sby1234ai.runmate.ui.GlassKind.PANEL, false)
+            box.stateListAnimator = null
+            box.foreground = android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(0x26FFFFFF), null,
+                android.graphics.drawable.GradientDrawable().apply { cornerRadius = 10 * resources.displayMetrics.density; setColor(-1) })
+            slash.visibility = if (on) View.GONE else View.VISIBLE
+            text.setTextColor(if (on) 0xFFFFFFFF.toInt() else 0x80FFFFFF.toInt())
+            (slash.parent as View).alpha = if (on) 1f else 0.55f
+            val scale = if (on) 1f else 0.94f
+            if (animate) box.animate().scaleX(scale).scaleY(scale).setDuration(180).start() else { box.scaleX = scale; box.scaleY = scale }
+            box.contentDescription = "$name ${if (on) "켜짐" else "꺼짐"}, 눌러서 바꾸기"
+        }
+        show(get(), false)
+        box.setOnClickListener {
+            if (RunRecorder.recording) { Toast.makeText(this, "기록 중에는 바꿀 수 없습니다. 다음 기록부터 적용돼요", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            val v = !get(); set(v); show(v, true)
+            box.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK)
+        }
     }
 
     /** 첫 화면 맨 아래 버튼: 평소엔 「달리기 시작」, 달리는 중엔 「달리는 중 12:34 · 2.31 km」 */

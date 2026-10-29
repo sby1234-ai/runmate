@@ -30,8 +30,9 @@ class PrepActivity : AppCompatActivity() {
         EdgeInsets.apply(this)
         renderPlans()
 
-        bindSwitch(R.id.rowVoice, R.id.swVoice, R.id.voiceState, Prefs.voice(this), "1km마다 거리와 시간을 읽어 줍니다") { Prefs.setVoice(this, it) }
-        bindSwitch(R.id.rowPause, R.id.swPause, R.id.pauseState, Prefs.autoPause(this), "멈춰 서면 운동 시간을 멈춥니다") { Prefs.setAutoPause(this, it) }
+        // 음성 안내·자동 일시정지는 첫 화면의 아이콘 토글로 옮김(같은 설정이 두 곳에 있지 않게)
+        for (id in intArrayOf(R.id.rowVoice, R.id.rowPause)) findViewById<View>(id).visibility = View.GONE
+        ((findViewById<View>(R.id.rowVoice).parent as android.view.ViewGroup).let { p -> p.getChildAt(p.indexOfChild(findViewById(R.id.rowVoice)) - 1) })?.visibility = View.GONE
 
         val go = findViewById<View>(R.id.btnGo)
         Glass.apply(go, GlassKind.STRONG, true)
