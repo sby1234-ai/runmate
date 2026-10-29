@@ -11,7 +11,7 @@ import io.github.sby1234ai.runmate.logic.TrackPoint
 import kotlin.math.cos
 
 /** 지도 없이 경로 모양만 그립니다. 화면(RouteView)과 공유 이미지가 같이 씁니다. */
-class RouteDrawer(ctx: Context, strokePx: Float, private val dotPx: Float) {
+class RouteDrawer(private val ctx: Context, private val strokePx: Float, private val dotPx: Float) {
     private fun paint(colorRes: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(ctx, colorRes)
         strokeWidth = strokePx; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; style = Paint.Style.STROKE

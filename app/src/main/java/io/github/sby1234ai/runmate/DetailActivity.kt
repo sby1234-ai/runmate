@@ -35,7 +35,7 @@ class DetailActivity : AppCompatActivity() {
     private var run: Run? = null
     private var stats: Stats? = null
     private var panel: MapPanel? = null
-    private var title = ""
+    private var runTitle = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +46,8 @@ class DetailActivity : AppCompatActivity() {
         run = r
         val s = RunStats.of(r.points)
         stats = s
-        title = SimpleDateFormat("M월 d일 (E) a h:mm", Locale.KOREA).format(Date(r.id))
-        findViewById<TextView>(R.id.title).text = "$title 기록"
+        runTitle = SimpleDateFormat("M월 d일 (E) a h:mm", Locale.KOREA).format(Date(r.id))
+        findViewById<TextView>(R.id.title).text = "$runTitle 기록"
         findViewById<TextView>(R.id.bigDist).text = Format.km(s.distance)
 
         val p = MapPanel(this, findViewById<FrameLayout>(R.id.mapBox), Prefs.map(this))
@@ -138,7 +138,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun shareImage() {
         val r = run ?: return; val s = stats ?: return
-        val bmp = ShareImage.render(this, r, s, title)
+        val bmp = ShareImage.render(this, r, s, runTitle)
         val dir = File(cacheDir, "share").apply { mkdirs() }
         val file = File(dir, "runmate-${r.id}.png")
         file.outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -156,7 +156,7 @@ class DetailActivity : AppCompatActivity() {
         val dir = File(cacheDir, "gpx").apply { mkdirs() }
         val stamp = SimpleDateFormat("yyyyMMdd-HHmm", Locale.KOREA).format(Date(r.id))
         val file = File(dir, "runmate-$stamp.gpx")
-        file.writeText(Gpx.write(r, "$title 기록"))
+        file.writeText(Gpx.write(r, "$runTitle 기록"))
         val uri = FileProvider.getUriForFile(this, "$packageName.files", file)
         val send = Intent(Intent.ACTION_SEND)
             .setType("application/gpx+xml")
