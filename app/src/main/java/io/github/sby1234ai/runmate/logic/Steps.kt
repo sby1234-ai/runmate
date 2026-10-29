@@ -12,6 +12,9 @@ class StepTracker(private val windowMs: Long = 20_000) {
     val total: Int get() = counted.toInt()
     private val samples = ArrayDeque<Pair<Long, Int>>()   // (경과 시각, 그때까지 걸음)
 
+    /** 중간 저장본에서 이어 갈 때: 지금까지 센 걸음부터 다시 셉니다(센서 기준값은 다음 값부터 새로 잡음). */
+    fun restore(steps: Int) { counted = steps.toDouble(); last = null }
+
     fun onSensor(cumulative: Float, nowElapsed: Long, counting: Boolean) {
         val prev = last
         last = cumulative

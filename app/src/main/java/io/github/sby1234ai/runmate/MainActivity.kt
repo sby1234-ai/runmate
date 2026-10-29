@@ -132,6 +132,11 @@ class MainActivity : AppCompatActivity() {
         ticker.post(tick)
         renderHome()
         loadWeather()
+        // 휴대폰이 앱을 강제로 꺼서 멈춘 기록이 있으면 그 자리부터 이어서 기록
+        if (!RunRecorder.recording && io.github.sby1234ai.runmate.data.CheckpointStore.exists(this) && hasFine()) {
+            RecordingService.restore(this)
+            Toast.makeText(this, "멈췄던 기록을 이어서 합니다", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onStop() {

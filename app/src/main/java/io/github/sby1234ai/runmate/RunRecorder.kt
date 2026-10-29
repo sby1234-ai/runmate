@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import io.github.sby1234ai.runmate.logic.Activity
+import io.github.sby1234ai.runmate.logic.Checkpoint
 import io.github.sby1234ai.runmate.logic.Geo
 import io.github.sby1234ai.runmate.logic.GpsSmoother
 import io.github.sby1234ai.runmate.logic.IntervalPlan
@@ -74,6 +75,7 @@ object RunRecorder {
     private var breakNext = false
     private var stepper = StepTracker()
     private val smoother = GpsSmoother()
+    private var autoPauseOn = true
 
     @Volatile var recording = false; private set
     var startedAt = 0L; private set
@@ -84,7 +86,7 @@ object RunRecorder {
         synchronized(this) {
             points.clear(); classifier = MotionClassifier(); stats = RunStats.of(emptyList())
             lastAccuracy = null; savedRunId = null
-            pause = PauseTracker(autoEnabled = autoPause); this.plan = plan; endedAt = null; demoMotion = null
+            pause = PauseTracker(autoEnabled = autoPause); autoPauseOn = autoPause; this.plan = plan; endedAt = null; demoMotion = null
             breakNext = false; stepper = StepTracker(); smoother.reset()
             startedAt = now; startElapsed = SystemClock.elapsedRealtime(); endElapsed = null; recording = true
         }
@@ -139,6 +141,34 @@ object RunRecorder {
 
     fun onActivity(a: Activity, now: Long) {
         synchronized(this) { classifier.onActivity(a, now) }
+    }
+
+    /** 지금 기록의 중간 저장본(기록 중이 아니면 null). */
+    fun checkpoint(): Checkpoint? = synchronized(this) {
+        if (!recording || demoMotion != null) return null
+        Checkpoint(startedAt, activeMsLocked(), System.currentTimeMillis(), pause.paused, pause.manual,
+            plan?.id ?: 0, autoPauseOn, stepper.total, ArrayList(points))
+    }
+
+    private fun activeMsLocked(): Long =
+        io.github.sby1234ai.runmate.logic.PauseTracker.activeTime(startElapsed, SystemClock.elapsedRealtime(), pause.pausedAt, pause.pausedTotal)
+
+    /** 앱이 강제로 꺼졌다가 다시 켜졌을 때 중간 저장본에서 이어서 기록합니다. */
+    fun restore(c: Checkpoint) {
+        synchronized(this) {
+            points.clear(); points.addAll(c.points); stats = RunStats.of(points)
+            classifier = MotionClassifier(); lastAccuracy = null; savedRunId = null
+            pause = PauseTracker(autoEnabled = c.autoPause); autoPauseOn = c.autoPause
+            plan = IntervalPlan.byId(c.planId); endedAt = null; endElapsed = null; demoMotion = null
+            stepper = StepTracker().also { it.restore(c.steps) }; smoother.reset()
+            breakNext = points.isNotEmpty()           // 꺼져 있던 동안의 빈 구간은 거리에 넣지 않음
+            val nowE = SystemClock.elapsedRealtime()
+            startedAt = c.startedAt
+            startElapsed = nowE - c.resumedActiveMs(System.currentTimeMillis())
+            if (c.manual) pause.pauseManually(nowE)
+            recording = true
+        }
+        notifyListeners()
     }
 
     /** 기록을 끝내고, 저장할 만한 기록이면 돌려줍니다. */

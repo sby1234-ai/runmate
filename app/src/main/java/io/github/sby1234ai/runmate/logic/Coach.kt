@@ -22,6 +22,13 @@ class Coach(
     private var lastMotionCueAt = Long.MIN_VALUE / 2
     private var wasPaused = false
 
+    /** 중간 저장본에서 이어 갈 때: 이미 지난 km 안내와 시작 안내를 다시 말하지 않게 합니다. */
+    fun prime(stats: Stats, paused: Boolean) {
+        started = true
+        lastKm = (stats.distance / 1000).toInt()
+        wasPaused = paused
+    }
+
     fun update(now: Long, startedAt: Long, activeMs: Long, stats: Stats, motion: Motion, paused: Boolean): List<String> {
         val out = mutableListOf<String>()
 

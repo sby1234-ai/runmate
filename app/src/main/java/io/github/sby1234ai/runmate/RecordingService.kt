@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import io.github.sby1234ai.runmate.data.CheckpointStore
 import io.github.sby1234ai.runmate.data.Prefs
 import io.github.sby1234ai.runmate.data.RunStore
 import io.github.sby1234ai.runmate.logic.Coach
@@ -48,12 +49,19 @@ class RecordingService : Service() {
         private const val ACTION_STOP = "stop"
         private const val ACTION_PAUSE = "pause"
         private const val ACTION_RESUME = "resume"
+        private const val ACTION_RESTORE = "restore"
+        private const val RESTORE_NOTIF_ID = 2
         private const val CHANNEL = "recording"
         private const val NOTIF_ID = 1
         private const val AR_REQUEST = 7
 
         fun start(ctx: Context) {
             ContextCompat.startForegroundService(ctx, Intent(ctx, RecordingService::class.java).setAction(ACTION_START))
+        }
+
+        /** 강제로 꺼졌던 기록을 중간 저장본에서 이어서 기록 */
+        fun restore(ctx: Context) {
+            ContextCompat.startForegroundService(ctx, Intent(ctx, RecordingService::class.java).setAction(ACTION_RESTORE))
         }
 
         fun pause(ctx: Context, on: Boolean) {
@@ -68,6 +76,7 @@ class RecordingService : Service() {
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private var lastNotifAt = 0L
     private var lastPaused = false
+    private var lastSavedAt = 0L
     private var voice: Voice? = null
     private var coach: Coach? = null
     private val ticker = Handler(Looper.getMainLooper())
@@ -81,6 +90,7 @@ class RecordingService : Service() {
             val cues = coach?.update(now, s.startedAt, s.activeNow(), s.stats, s.motion, s.paused) ?: emptyList()
             cues.forEach { voice?.say(it) }
             // 5초마다, 그리고 멈춤↔다시 시작이 바뀌는 순간 바로 알림(잠금 화면 카드)을 고칩니다
+            if (now - lastSavedAt >= 30_000) { lastSavedAt = now; saveCheckpoint() }
             if (now - lastNotifAt > 5000 || s.paused != lastPaused) { lastNotifAt = now; lastPaused = s.paused; updateNotification() }
             ticker.postDelayed(this, 1000)
         }
@@ -102,24 +112,47 @@ class RecordingService : Service() {
             // 음성 안내("일시정지"/"다시 시작")는 Coach가 상태 변화를 보고 한 번만 말합니다
             ACTION_PAUSE -> { RunRecorder.setManualPause(true); updateNotification() }
             ACTION_RESUME -> { RunRecorder.setManualPause(false); updateNotification() }
+            ACTION_RESTORE -> begin(restore = true)
+            // intent가 없으면 시스템이 강제로 껐던 서비스를 다시 살린 것: 중간 저장본에서 이어서 기록
+            null -> if (intent == null) begin(restore = true) else begin()
             else -> begin()
         }
-        return START_NOT_STICKY
+        // 기록 중에 휴대폰이 앱을 강제로 끄면 시스템이 이 서비스를 다시 살리도록(START_STICKY)
+        return if (RunRecorder.recording) START_STICKY else START_NOT_STICKY
     }
 
-    private fun begin() {
+    private fun begin(restore: Boolean = false) {
         createChannel()
+        val cp = if (restore && !RunRecorder.recording) CheckpointStore.load(this) else null
+        if (restore && !RunRecorder.recording && cp == null) { stopSelf(); return }
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
-        ServiceCompat.startForeground(this, NOTIF_ID, buildNotification("기록을 시작했습니다"), type)
+        try {
+            ServiceCompat.startForeground(this, NOTIF_ID, buildNotification(if (cp != null) "기록을 이어서 합니다" else "기록을 시작했습니다"), type)
+        } catch (e: Exception) {
+            // 앱이 화면에 없을 때는 안드로이드가 위치 기록 서비스를 다시 켜지 못하게 막을 수 있음 → 눌러서 이어 가도록 안내
+            if (cp != null) askToResume()
+            stopSelf(); return
+        }
         if (RunRecorder.recording) return
-        val plan = IntervalPlan.byId(Prefs.interval(this))
-        val autoPause = Prefs.autoPause(this)
-        RunRecorder.start(System.currentTimeMillis(), plan, autoPause)
+        val plan: IntervalPlan?
+        val autoPause: Boolean
+        if (cp != null) {
+            RunRecorder.restore(cp)
+            plan = IntervalPlan.byId(cp.planId); autoPause = cp.autoPause
+            getSystemService(NotificationManager::class.java).cancel(RESTORE_NOTIF_ID)
+        } else {
+            plan = IntervalPlan.byId(Prefs.interval(this))
+            autoPause = Prefs.autoPause(this)
+            RunRecorder.start(System.currentTimeMillis(), plan, autoPause)
+        }
         acquireWakeLock()
         startSteps()
         if (Prefs.voice(this)) {
             voice = Voice(this)
-            coach = Coach(plan, autoPause)
+            coach = Coach(plan, autoPause).also { c ->
+                if (cp != null) RunRecorder.snapshot().let { c.prime(it.stats, it.paused) }
+            }
+            if (cp != null) voice?.say("기록을 이어서 합니다.")
         }
         ticker.post(tick)
         try {
@@ -196,6 +229,27 @@ class RecordingService : Service() {
 
     private fun stopSteps() { getSystemService(SensorManager::class.java).unregisterListener(stepListener) }
 
+    // 30초마다 진행 중인 기록을 저장(앱이 강제로 꺼져도 이어서 기록하기 위해). 파일 쓰기는 뒤에서
+    private fun saveCheckpoint() {
+        val cp = RunRecorder.checkpoint() ?: return
+        val app = applicationContext
+        Thread { try { CheckpointStore.saveIfRecording(app, cp) { RunRecorder.recording } } catch (_: Exception) {} }.start()
+    }
+
+    private fun askToResume() {
+        val open = PendingIntent.getActivity(this, 5, Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val n = NotificationCompat.Builder(this, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_run)
+            .setContentTitle("런메이트 기록이 잠시 멈췄어요")
+            .setContentText("눌러서 앱을 열면 멈춘 곳부터 이어서 기록합니다")
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+        getSystemService(NotificationManager::class.java).notify(RESTORE_NOTIF_ID, n)
+    }
+
     private fun finish() {
         releaseWakeLock()
         stopSteps()
@@ -206,6 +260,7 @@ class RecordingService : Service() {
             try { ActivityRecognition.getClient(this).removeActivityTransitionUpdates(arPendingIntent()) } catch (_: SecurityException) {}
         }
         val run = RunRecorder.stop()
+        CheckpointStore.clear(this)
         if (run != null) {
             RunStore.save(this, run)
             RunRecorder.markSaved(run.id)
