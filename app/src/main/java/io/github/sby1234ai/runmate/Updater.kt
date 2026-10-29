@@ -1,7 +1,7 @@
 package io.github.sby1234ai.runmate
 
 import android.app.Activity
-import android.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -64,7 +64,7 @@ object Updater {
 
     private fun ask(a: Activity, rel: Update.Release, current: String) {
         val notes = rel.notes.lineSequence().filter { it.isNotBlank() }.take(8).joinToString("\n")
-        AlertDialog.Builder(a)
+        MaterialAlertDialogBuilder(a)
             .setTitle("새 버전 ${rel.version}이 있어요")
             .setMessage("지금 버전: $current\n\n$notes\n\n받은 뒤 「설치」만 누르면 됩니다. 기록은 그대로 남습니다.")
             .setPositiveButton("업데이트") { _, _ -> download(a, rel) }
@@ -73,7 +73,7 @@ object Updater {
     }
 
     private fun download(a: Activity, rel: Update.Release) {
-        val dlg = AlertDialog.Builder(a).setTitle("새 버전 받는 중…").setMessage("잠시만 기다려 주세요").setCancelable(false).show()
+        val dlg = MaterialAlertDialogBuilder(a).setTitle("새 버전 받는 중…").setMessage("잠시만 기다려 주세요").setCancelable(false).show()
         Thread {
             val result: Result<File> = runCatching {
                 val dir = File(a.cacheDir, "updates").apply { mkdirs(); listFiles()?.forEach { it.delete() } }

@@ -27,9 +27,9 @@
 | 릴리스 | `app/build.gradle.kts`의 `versionName`을 올려 main에 푸시하면 그 버전 릴리스가 자동 생성(태그 푸시는 막혀 있음). 서명 키는 GitHub Secrets에만 있음 |
 | 웹 화면 | `web/` 폴더가 바뀌면 `.github/workflows/pages.yml`이 GitHub Pages로 배포 |
 
-## 지금 상태 (2026-10-29 21:50)
+## 지금 상태 (2026-10-29 22:10)
 
-- 배포: **v0.3.5** (versionCode 8) — 자동 업데이트(`Updater.kt`, 하루 1회 GitHub 최신 릴리스 확인→받기→SHA-256 확인→설치 화면), 알림 버튼 「일시정지/계속」·「종료」(종료는 앱을 열어 끝냄), 밀어서 지워도 다시 표시(deleteIntent), 잠금 위 앱 화면은 기본 끔(잠금 풀린 것처럼 보여서, 잠금 화면엔 알림 카드만). 이전 v0.3.4 (versionCode 7) — 강제 종료 복구(10초마다 `CheckpointStore`, START_STICKY, 앱 열면 이어서), 잠금 화면(화면 꺼질 때 전체 화면 알림으로 잠금 위 달리기 화면 `RecordingService.showOverLockScreen`, 기록 알림을 기본 등급 무음 채널 `recording_v2`로 바꿔 잠금 화면에 보임), 삼성 라이브 알림 extras(허용된 앱/개발자 옵션에서만). 이전 v0.3.3 (versionCode 6). 0.3.2 = 아래 잠금 화면·시간·걸음·실시간 알림, 0.3.3 = GPS 흔들림 거르기(`logic/Smoother.kt`)·멈춘 구간 거리 제외. 정확도 설명과 다른 앱 비교 방법은 `docs/ACCURACY.md`
+- 배포: **v0.3.7** — 대화상자(업데이트·기록 삭제·인터벌)를 앱과 같은 어두운 테마로(`Dialog.RunMate`). v0.3.6 — 알림 「종료」 뒤 결과 화면이 열리게(`MainActivity.openDetailOnSave`). 이전 **v0.3.5** (versionCode 8) — 자동 업데이트(`Updater.kt`, 하루 1회 GitHub 최신 릴리스 확인→받기→SHA-256 확인→설치 화면), 알림 버튼 「일시정지/계속」·「종료」(종료는 앱을 열어 끝냄), 밀어서 지워도 다시 표시(deleteIntent), 잠금 위 앱 화면은 기본 끔(잠금 풀린 것처럼 보여서, 잠금 화면엔 알림 카드만). 이전 v0.3.4 (versionCode 7) — 강제 종료 복구(10초마다 `CheckpointStore`, START_STICKY, 앱 열면 이어서), 잠금 화면(화면 꺼질 때 전체 화면 알림으로 잠금 위 달리기 화면 `RecordingService.showOverLockScreen`, 기록 알림을 기본 등급 무음 채널 `recording_v2`로 바꿔 잠금 화면에 보임), 삼성 라이브 알림 extras(허용된 앱/개발자 옵션에서만). 이전 v0.3.3 (versionCode 6). 0.3.2 = 아래 잠금 화면·시간·걸음·실시간 알림, 0.3.3 = GPS 흔들림 거르기(`logic/Smoother.kt`)·멈춘 구간 거리 제외. 정확도 설명과 다른 앱 비교 방법은 `docs/ACCURACY.md`
 - 0.3.1 이후 들어간 것:
   - 잠금 화면: 달리는 중이면 `MainActivity`가 잠금 위에 보임(`showOnLockScreen`), 알림은 어두운 카드(`res/layout/notif_run_small|big.xml`, 흐르는 Chronometer)
   - 시간: 운동 시간은 모두 `SystemClock.elapsedRealtime` 하나로(`RunRecorder.Snapshot.activeMs/activeNow`), 앱은 초 경계에 맞춰 갱신, 알림 Chronometer와 같은 기준점. 인터벌도 운동 시간 기준(일시정지하면 멈춤)
@@ -44,7 +44,7 @@
 1. 사용자 휴대폰 결과 반영(시간·일시정지·잠금 화면·걸음, `docs/ACCURACY.md` 비교 표)
 2. 초록 칩: 삼성은 나우 바·라이브 알림을 자기 앱/허용 앱에만 엶. One UI 8 이상은 개발자 옵션 「모든 앱의 라이브 알림」을 켜면 됨(설정 화면에 안내). 사용자 확인 결과 반영
 3. 다음: 갤럭시 워치 심박 ② 헬스 커넥트로 달린 뒤 심박(평균·최고·그래프·구간) → 배포 → ③ 워치(웨어 OS) 앱으로 실시간 연동(시간·거리·심박 표시, 워치 버튼으로 시작/일시정지/종료). 사용자가 ② 다음 ③ 순서로 하기로 함. 0.3.5 배포 뒤 "잠시 멈춰" 요청 → 사용자 말 기다리기
-4. 알려진 작은 문제: 알림 「종료」로 끝낼 때 기록은 저장되지만 결과 화면이 자동으로 안 열리는 경우가 있음(에뮬레이터 22_after_stop)
+4. (0.3.6에서 고침) 알림 「종료」 뒤 결과 화면 — 에뮬레이터 22_after_stop으로 확인 필요. 다음 후보: 공유 이미지 확인, 웹·README 0.3 반영, plan.md v2, 중간 점검 2차
 5. 미니 타이머(상태 표시줄 아래 떠 있는 알약, 다른 앱 위에 표시) — 미리보기만 보여 줌, 진행 여부 미정
 4. 단계마다 versionCode·versionName을 올려 배포(사용자 요청), 보고 후 멈추지 말고 다음 작업 이어서
 5. 포털 중간 점검 2차 제출(0.2~0.3), 1주일 실사용 후 최종 제출(`docs/plan.md`)

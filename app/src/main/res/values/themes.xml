@@ -10,6 +10,15 @@
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@color/bg</item>
+        <item name="materialAlertDialogTheme">@style/Dialog.RunMate</item>
+    </style>
+    <!-- 대화상자도 앱과 같은 어두운 카드 색 -->
+    <style name="Dialog.RunMate" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceContainerHigh">@color/surface</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorOnSurfaceVariant">@color/sub</item>
+        <item name="colorPrimary">@color/walk</item>
     </style>
     <style name="Num">
         <item name="android:fontFeatureSettings">tnum</item>

@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -95,7 +95,7 @@ class DetailActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.btnShare).setOnClickListener { shareImage() }
         findViewById<MaterialButton>(R.id.btnGpx).setOnClickListener { exportGpx() }
         findViewById<MaterialButton>(R.id.btnDelete).setOnClickListener {
-            AlertDialog.Builder(this)
+            MaterialAlertDialogBuilder(this)
                 .setMessage("이 기록을 지울까요? 지운 기록은 되살릴 수 없습니다.")
                 .setPositiveButton("지우기") { _, _ -> RunStore.delete(this, r.id); finish() }
                 .setNegativeButton("취소", null)
