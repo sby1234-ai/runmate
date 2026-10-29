@@ -1,0 +1,40 @@
+name: photos
+
+# 배경 사진 후보(작게)와 최종본(앱용)을 Unsplash에서 받아 ci-photos 브랜치에 올립니다.
+# tools/photo-candidates.txt → previews/, tools/photos.txt → final/ (가로 1080, JPEG)
+on:
+  push:
+    branches: [main]
+    paths: ["tools/photo-candidates.txt", "tools/photos.txt", ".github/workflows/photos.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 받기
+        run: |
+          mkdir -p out/previews out/final
+          grep -v '^#' tools/photo-candidates.txt | while read -r cat id; do
+            [ -z "$id" ] && continue
+            curl -sfL "https://images.unsplash.com/photo-${id}?w=360&q=60&fm=jpg&fit=crop&h=760" -o "out/previews/${cat}__${id}.jpg" || echo "실패 $cat $id" >> out/errors.txt
+          done
+          if [ -f tools/photos.txt ]; then
+            grep -v '^#' tools/photos.txt | while read -r name id; do
+              [ -z "$id" ] && continue
+              curl -sfL "https://images.unsplash.com/photo-${id}?w=1080&h=2340&fit=crop&crop=entropy&q=72&fm=jpg" -o "out/final/${name}.jpg" || echo "실패 $name $id" >> out/errors.txt
+            done
+          fi
+          ls -la out/previews out/final
+      - name: 올리기
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          cd out
+          git init -q && git checkout -q -b ci-photos && git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "photos ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-photos
