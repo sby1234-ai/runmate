@@ -9,7 +9,7 @@ class StepsTest {
         val s = StepTracker()
         var c = 50_000f
         for (t in 0..20) { s.onSensor(c, t * 1000L, counting = true); c += 2.7f }   // 초당 약 2.7걸음(분당 162)
-        assertEquals(54, s.total, 2)
+        assertEquals(54.0, s.total.toDouble(), 2.0)
         assertEquals(162.0, s.cadence(20_000)!!.toDouble(), 6.0)
     }
 
