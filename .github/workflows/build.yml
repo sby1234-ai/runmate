@@ -52,7 +52,7 @@ jobs:
           "$AAPT" dump permissions app/build/outputs/apk/release/app-release.apk 2>/dev/null | tee permissions.txt \
             || "$AAPT" dump permissions app/build/outputs/apk/debug/app-debug.apk | tee permissions.txt
           # 허용한 권한 말고 다른 것이 섞여 들어오면(라이브러리가 몰래 넣는 경우 등) 빌드를 실패시킵니다
-          ALLOW='^(android.permission.(ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|ACTIVITY_RECOGNITION|POST_NOTIFICATIONS|FOREGROUND_SERVICE|FOREGROUND_SERVICE_LOCATION|INTERNET|ACCESS_NETWORK_STATE)|com.google.android.gms.permission.ACTIVITY_RECOGNITION|io.github.sby1234ai.runmate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)$'
+          ALLOW='^(android.permission.(ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|ACTIVITY_RECOGNITION|POST_NOTIFICATIONS|FOREGROUND_SERVICE|FOREGROUND_SERVICE_LOCATION|INTERNET|ACCESS_NETWORK_STATE|WAKE_LOCK|REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)|com.google.android.gms.permission.ACTIVITY_RECOGNITION|io.github.sby1234ai.runmate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)$'
           EXTRA=$(grep -oP "uses-permission: name='\K[^']+" permissions.txt | grep -vE "$ALLOW" || true)
           if [ -n "$EXTRA" ]; then echo "허용하지 않은 권한: $EXTRA"; exit 1; fi
           echo "권한 확인 통과"

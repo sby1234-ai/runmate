@@ -115,9 +115,7 @@ class MainActivity : AppCompatActivity() {
         stop.setOnLongClickListener {
             if (RunRecorder.recording) { RecordingService.stop(this); true } else false
         }
-        findViewById<MaterialButton>(R.id.btnBattery).setOnClickListener {
-            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-        }
+        findViewById<MaterialButton>(R.id.btnBattery).setOnClickListener { requestBatteryExemption() }
         handleDemo(intent)
     }
 
@@ -159,6 +157,7 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) need.add(Manifest.permission.ACTIVITY_RECOGNITION)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) need.add(Manifest.permission.POST_NOTIFICATIONS)
         val missing = need.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+        askBatteryOnce()
         if (missing.isEmpty()) RecordingService.start(this) else askPermissions.launch(missing.toTypedArray())
     }
 
@@ -411,13 +410,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** 배터리 최적화에서 빼 달라는 시스템 창을 바로 띄웁니다(안 되는 휴대폰이면 배터리 설정 목록). */
+    private fun requestBatteryExemption() {
+        try {
+            startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, android.net.Uri.parse("package:$packageName")))
+        } catch (e: Exception) {
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        }
+    }
+
+    /** 첫 달리기 때 한 번만 물어봅니다. 거절해도 기록은 시작합니다. */
+    private fun askBatteryOnce() {
+        val pm = getSystemService(PowerManager::class.java)
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        val p = getSharedPreferences("settings", MODE_PRIVATE)
+        if (p.getBoolean("askedBattery", false)) return
+        p.edit().putBoolean("askedBattery", true).apply()
+        requestBatteryExemption()
+    }
+
     private fun renderSetup() {
         val pm = getSystemService(PowerManager::class.java)
         val card = findViewById<View>(R.id.setupCard)
         if (pm.isIgnoringBatteryOptimizations(packageName)) { card.visibility = View.GONE; return }
         card.visibility = View.VISIBLE
         findViewById<TextView>(R.id.setupText).text =
-            "휴대폰의 배터리 절약 기능이 기록 중인 앱을 멈출 수 있습니다. 배터리 설정에서 「런메이트」를 「최적화하지 않음」(갤럭시: 제한 없음)으로 바꿔 주세요."
+            "휴대폰의 배터리 절약 기능이 화면이 꺼진 동안 기록을 멈출 수 있습니다. 아래 버튼을 눌러 「허용」을 고르거나, 갤럭시는 설정 → 애플리케이션 → 런메이트 → 배터리에서 「제한 없음」으로 바꿔 주세요."
     }
 
     // ───────── 화면 점검용(디버그 빌드에서만) ─────────

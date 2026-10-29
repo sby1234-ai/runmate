@@ -13,6 +13,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.PowerManager
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -74,6 +75,7 @@ class RecordingService : Service() {
             val now = System.currentTimeMillis()
             val cues = coach?.update(now, s.startedAt, s.activeMs(now), s.stats, s.motion, s.paused) ?: emptyList()
             cues.forEach { voice?.say(it) }
+            if (now - lastNotifAt > 5000) { lastNotifAt = now; updateNotification() }
             ticker.postDelayed(this, 1000)
         }
     }
@@ -106,14 +108,19 @@ class RecordingService : Service() {
         val plan = IntervalPlan.byId(Prefs.interval(this))
         val autoPause = Prefs.autoPause(this)
         RunRecorder.start(System.currentTimeMillis(), plan)
+        acquireWakeLock()
         if (Prefs.voice(this)) {
             voice = Voice(this)
             coach = Coach(plan, autoPause)
         }
         ticker.post(tick)
         try {
+            // 화면이 꺼져도 위치를 모아 두었다 한꺼번에 주지 말고(배치 없음) 2초마다 바로 받게 합니다
             val req = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L)
                 .setMinUpdateIntervalMillis(1000L)
+                .setMaxUpdateDelayMillis(2000L)
+                .setMinUpdateDistanceMeters(0f)
+                .setWaitForAccurateLocation(false)
                 .build()
             fused.requestLocationUpdates(req, callback, Looper.getMainLooper())
         } catch (e: SecurityException) {
@@ -150,7 +157,23 @@ class RecordingService : Service() {
         }
     }
 
+    // 화면이 꺼지거나 잠금 상태여도 기록이 계속되도록, 기록하는 동안만 CPU가 잠들지 않게 붙잡아 둡니다(화면은 꺼져도 됨)
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    private fun acquireWakeLock() {
+        if (wakeLock?.isHeld == true) return
+        wakeLock = getSystemService(PowerManager::class.java)
+            .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runmate:recording")
+            .apply { setReferenceCounted(false); acquire(6 * 60 * 60 * 1000L) }   // 최대 6시간
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let { if (it.isHeld) it.release() }
+        wakeLock = null
+    }
+
     private fun finish() {
+        releaseWakeLock()
         fused.removeLocationUpdates(callback)
         ticker.removeCallbacks(tick)
         voice?.shutdown(); voice = null; coach = null
@@ -167,6 +190,7 @@ class RecordingService : Service() {
     }
 
     override fun onDestroy() {
+        releaseWakeLock()
         fused.removeLocationUpdates(callback)
         ticker.removeCallbacks(tick)
         voice?.shutdown(); voice = null
@@ -184,13 +208,20 @@ class RecordingService : Service() {
     private fun buildNotification(text: String): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val manual = RunRecorder.snapshot().manualPaused
+        val toggle = PendingIntent.getService(this, 3,
+            Intent(this, RecordingService::class.java).setAction(if (manual) ACTION_RESUME else ACTION_PAUSE),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_run)
-            .setContentTitle("런메이트 기록 중")
+            .setContentTitle(if (manual) "런메이트 일시정지" else "런메이트 기록 중")
             .setContentText(text)
             .setContentIntent(open)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)       // 잠금 화면에서도 거리·시간이 보이게
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .addAction(0, if (manual) "다시 시작" else "일시정지", toggle)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
     }
@@ -199,7 +230,12 @@ class RecordingService : Service() {
         val s = RunRecorder.snapshot()
         val now = System.currentTimeMillis()
         val time = if (Prefs.autoPause(this)) s.activeMs(now) else s.elapsedMs(now)
-        val state = if (s.manualPaused || (Prefs.autoPause(this) && s.paused)) "일시정지" else "지금 ${s.motion.label}"
+        val state = when {
+            s.manualPaused -> "일시정지"
+            Prefs.autoPause(this) && s.paused -> "멈춰 있어 자동 일시정지"
+            s.lastAccuracy == null -> "GPS 찾는 중"
+            else -> "지금 ${s.motion.label}"
+        }
         val text = "${Format.km(s.stats.distance)} km · ${Format.duration(time)} · $state"
         getSystemService(NotificationManager::class.java).notify(NOTIF_ID, buildNotification(text))
     }
