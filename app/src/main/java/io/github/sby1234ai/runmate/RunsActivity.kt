@@ -25,6 +25,7 @@ class RunsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_runs)
+        io.github.sby1234ai.runmate.ui.EdgeInsets.apply(this)
     }
 
     override fun onResume() {

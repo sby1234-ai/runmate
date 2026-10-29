@@ -40,6 +40,7 @@ class DetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+        io.github.sby1234ai.runmate.ui.EdgeInsets.apply(this)
         val id = intent.getLongExtra(EXTRA_ID, -1L)
         val r = RunStore.load(this, id)
         if (r == null) { finish(); return }

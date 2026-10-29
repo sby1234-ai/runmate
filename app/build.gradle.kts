@@ -9,14 +9,14 @@ val hasReleaseKey = !releaseStore.isNullOrBlank() && file(releaseStore).exists()
 
 android {
     namespace = "io.github.sby1234ai.runmate"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.github.sby1234ai.runmate"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 11
-        versionName = "0.3.8"
+        targetSdk = 36
+        versionCode = 12
+        versionName = "0.3.9"
     }
 
     signingConfigs {

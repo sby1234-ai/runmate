@@ -19,6 +19,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        io.github.sby1234ai.runmate.ui.EdgeInsets.apply(this)
 
         val swMap = findViewById<MaterialSwitch>(R.id.swMap)
         val swVoice = findViewById<MaterialSwitch>(R.id.swVoice)
@@ -58,7 +59,8 @@ class SettingsActivity : AppCompatActivity() {
         swUpdate.setOnCheckedChangeListener { _, v -> Updater.setEnabled(this, v) }
         findViewById<MaterialButton>(R.id.btnCheckUpdate).setOnClickListener { Updater.check(this, quiet = false) }
 
-        findViewById<MaterialButton>(R.id.btnDevOptions).setOnClickListener { DevOptions.open(this) }
+        findViewById<MaterialButton>(R.id.btnLive).setOnClickListener { LiveNotif.openSettings(this) }
+        findViewById<MaterialButton>(R.id.btnNotifSettings).setOnClickListener { LiveNotif.openAppNotificationSettings(this) }
 
         findViewById<MaterialButton>(R.id.btnTestVoice).setOnClickListener {
             val v = preview ?: Voice(this).also { preview = it }
@@ -74,11 +76,20 @@ class SettingsActivity : AppCompatActivity() {
         about.append("런메이트 ${BuildConfig.VERSION_NAME}\n지도 데이터 © OpenStreetMap 기여자 (ODbL). 지도 그림은 OpenStreetMap 재단 서버에서 받아 옵니다.\n날씨 정보: Open-Meteo.com (CC BY 4.0)\n소스: github.com/sby1234-ai/runmate")
     }
 
-    // 개발자 옵션을 켜고 돌아오면 버튼 글자를 바로 바꿈
+    // 실시간 알림 설정을 바꾸고 돌아오면 상태 글을 바로 고침
     override fun onResume() {
         super.onResume()
-        findViewById<MaterialButton>(R.id.btnDevOptions).text =
-            if (DevOptions.enabled(this)) "개발자 옵션에서 「모든 앱의 라이브 알림」 켜기" else "빌드 번호로 이동 (개발자 옵션 켜기)"
+        val btn = findViewById<MaterialButton>(R.id.btnLive)
+        findViewById<TextView>(R.id.liveState).text = when {
+            !LiveNotif.supported() ->
+                "안드로이드 16 이상에서만 쓸 수 있습니다. 이 휴대폰에서는 달리는 중 시간·거리를 알림 카드로 보여 줍니다."
+                    .also { btn.visibility = android.view.View.GONE }
+            LiveNotif.allowed(this) ->
+                "켜짐: 달리는 중 거리·시간이 상태 표시줄 초록 칩에 나옵니다. 갤럭시는 나우 바(잠금 화면 아래쪽 막대)에도 나옵니다 — 삼성이 다른 앱을 받아 주지 않는 휴대폰에선 칩만 나올 수 있습니다."
+            else ->
+                "꺼짐: 아래 버튼으로 런메이트의 실시간 알림을 켜면 달리는 중 거리·시간이 상태 표시줄 초록 칩과 나우 바(잠금 화면 아래쪽 막대)에 나옵니다."
+        }
+        btn.text = if (LiveNotif.allowed(this)) "실시간 알림 설정 열기" else "실시간 알림 켜기"
     }
 
     private fun renderStorage() {

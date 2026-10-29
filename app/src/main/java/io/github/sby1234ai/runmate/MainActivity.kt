@@ -147,6 +147,8 @@ class MainActivity : AppCompatActivity() {
         // 새 버전: 허용 화면에서 돌아왔으면 설치를 이어 가고, 하루 한 번 확인
         Updater.resumePending(this)
         if (!BuildConfig.DEBUG) Updater.checkDaily(this)
+        // 실시간 알림(초록 칩·나우 바)이 꺼져 있거나 잠금 화면에서 내용이 숨겨지면 안내(화면 점검용 디버그 빌드는 건너뜀)
+        if (!BuildConfig.DEBUG && !RunRecorder.recording) LiveNotif.checkOnStart(this)
         // 휴대폰이 앱을 강제로 꺼서 멈춘 기록이 있으면 그 자리부터 이어서 기록
         if (!RunRecorder.recording && io.github.sby1234ai.runmate.data.CheckpointStore.exists(this) && hasFine()) {
             RecordingService.restore(this)

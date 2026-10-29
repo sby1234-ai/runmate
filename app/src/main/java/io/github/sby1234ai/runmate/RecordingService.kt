@@ -56,7 +56,8 @@ class RecordingService : Service() {
         const val LOCK_NOTIF_ID = 3
         private const val LOCK_CHANNEL = "lockscreen"
         // 잠금 화면에서도 보이도록 '조용한 알림'이 아닌 기본 등급(소리·진동 없음)으로 새 채널을 씁니다
-        private const val CHANNEL = "recording_v2"
+        const val CHANNEL_ID = "recording_v2"
+        private const val CHANNEL = CHANNEL_ID
         private const val OLD_CHANNEL = "recording"
         private const val NOTIF_ID = 1
         private const val AR_REQUEST = 7
@@ -388,13 +389,13 @@ class RecordingService : Service() {
             .build()
     }
 
-    // ───── 안드로이드 16 이상: 「실시간 알림」(상태 표시줄 왼쪽 위에 색 칩으로 거리·시간 표시) ─────
+    // ───── 안드로이드 16 이상: 「실시간 알림」(상태 표시줄 초록 칩·갤럭시 나우 바에 거리·시간 표시) ─────
     // 실시간 알림은 직접 꾸민 카드·색 채운 알림을 허용하지 않으므로, 이 경우엔 표준 알림으로 같은 정보를 보여 줍니다.
-    // 이 앱은 아직 안드로이드 34 기준으로 빌드하므로 16의 새 함수는 이름으로 찾아 부릅니다(없는 휴대폰에선 건너뜀).
+    // 0.3.9부터 안드로이드 16(targetSdk 36) 기준으로 빌드해야 시스템이 실시간 알림 대상으로 봅니다.
+    // 16의 새 함수는 안드로이드 16 미만 휴대폰에서도 안전하도록 이름으로 찾아 부릅니다(없으면 건너뜀).
 
     /**
-     * 삼성 라이브 알림·나우 바(왼쪽 위 초록 칩)용 정보. 삼성이 허용한 앱이거나
-     * 개발자 옵션 「모든 앱의 라이브 알림」을 켠 경우에만 보이고, 그 밖에는 무시됩니다.
+     * 삼성 라이브 알림·나우 바용 추가 정보(삼성 확장 키). 삼성이 받아 주는 경우에만 쓰이고, 아니면 무시됩니다.
      */
     private fun samsungExtras(s: RunRecorder.Snapshot): android.os.Bundle {
         val nowE = android.os.SystemClock.elapsedRealtime()
@@ -421,13 +422,7 @@ class RecordingService : Service() {
         }
     }
 
-    private fun canPromote(): Boolean {
-        if (Build.VERSION.SDK_INT < 36) return false
-        return try {
-            NotificationManager::class.java.getMethod("canPostPromotedNotifications")
-                .invoke(getSystemService(NotificationManager::class.java)) as Boolean
-        } catch (e: Exception) { false }
-    }
+    private fun canPromote(): Boolean = LiveNotif.allowed(this)
 
     private fun liveUpdate(text: String, s: RunRecorder.Snapshot, open: PendingIntent, toggle: PendingIntent, paused: Boolean): Notification {
         val nowE = android.os.SystemClock.elapsedRealtime()
@@ -469,14 +464,17 @@ class RecordingService : Service() {
             .setDeleteIntent(repostIntent())
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
-        return try {
-            val b = Notification.Builder.recoverBuilder(this, n)
+        val b = try { Notification.Builder.recoverBuilder(this, n) } catch (e: Exception) { return n }
+        // 실시간 알림 요청(이게 있어야 칩·나우 바에 올라감). 짧은 글이 실패해도 요청은 살아 있게 따로 부름
+        try {
             Notification.Builder::class.java.getMethod("setRequestPromotedOngoing", Boolean::class.javaPrimitiveType).invoke(b, true)
-            // 칩에 보일 짧은 글(7자 미만이면 다 보임): 멈추면 "일시정지", 달리면 거리
+        } catch (e: Exception) { return n }
+        // 칩에 보일 짧은 글(7자 미만이면 다 보임): 멈추면 "일시정지", 달리면 거리
+        try {
             Notification.Builder::class.java.getMethod("setShortCriticalText", String::class.java)
                 .invoke(b, if (paused) "일시정지" else "${Format.km(s.stats.distance)}km")
-            b.build()
-        } catch (e: Exception) { n }
+        } catch (e: Exception) { }
+        return b.build()
     }
 
     /** 알림의 「종료」: 앱을 열어 기록을 끝내고 결과 화면을 보여 줍니다(저장도 앱에서). */
