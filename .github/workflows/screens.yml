@@ -4,7 +4,7 @@ name: screens
 on:
   push:
     branches: [main]
-    paths: ["app/**", ".github/screens.sh", ".github/workflows/screens.yml"]
+    paths: ["app/**", ".github/screens.sh", ".github/screens36.sh", ".github/workflows/screens.yml"]
   workflow_dispatch:
 
 permissions:
@@ -53,3 +53,47 @@ jobs:
           git add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "screens ${GITHUB_SHA::7}"
           git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-screens
+
+  # 안드로이드 16(API 36): 실시간 알림 칩 확인
+  screens36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: 디버그 빌드
+        run: gradle --no-daemon assembleDebug
+      - name: KVM 켜기
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: 안드로이드 16 에뮬레이터
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash .github/screens36.sh
+      - name: 결과 올리기 (ci-screens36 브랜치)
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p shots36
+          echo "${{ job.status }} ${GITHUB_SHA}" > shots36/STATUS
+          cd shots36
+          git init -q
+          git checkout -q -b ci-screens36
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "screens36 ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-screens36
