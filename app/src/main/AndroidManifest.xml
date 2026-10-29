@@ -15,6 +15,8 @@
     <!-- 화면이 꺼지거나 잠금 상태에서도 기록이 멈추지 않게: 기록 중에만 CPU를 깨워 두고, 배터리 최적화 제외를 바로 요청 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- 안드로이드 16 「실시간 알림」(상태 표시줄 칩). 설치만으로 허용되는 권한이며, 사용자가 설정에서 끌 수 있습니다 -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <!-- 지도 그림(OpenStreetMap 지도 조각)을 받아 오는 데만 씁니다. 설정에서 지도를 끄면 인터넷 요청이 생기지 않습니다.
          기록은 인터넷으로 보내는 코드가 없습니다. -->

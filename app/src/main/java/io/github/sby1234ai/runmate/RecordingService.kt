@@ -239,6 +239,7 @@ class RecordingService : Service() {
         val toggle = PendingIntent.getService(this, 3,
             Intent(this, RecordingService::class.java).setAction(if (paused) ACTION_RESUME else ACTION_PAUSE),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        if (canPromote()) return liveUpdate(text, snap, open, toggle, paused)
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_run)
             .setContentTitle(if (paused) "런메이트 일시정지" else "런메이트 기록 중")
@@ -258,6 +259,63 @@ class RecordingService : Service() {
             .addAction(0, if (paused) "▶ 다시 시작" else "Ⅱ 일시정지", toggle)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
+    }
+
+    // ───── 안드로이드 16 이상: 「실시간 알림」(상태 표시줄 왼쪽 위에 색 칩으로 거리·시간 표시) ─────
+    // 실시간 알림은 직접 꾸민 카드·색 채운 알림을 허용하지 않으므로, 이 경우엔 표준 알림으로 같은 정보를 보여 줍니다.
+    // 이 앱은 아직 안드로이드 34 기준으로 빌드하므로 16의 새 함수는 이름으로 찾아 부릅니다(없는 휴대폰에선 건너뜀).
+
+    private fun canPromote(): Boolean {
+        if (Build.VERSION.SDK_INT < 36) return false
+        return try {
+            NotificationManager::class.java.getMethod("canPostPromotedNotifications")
+                .invoke(getSystemService(NotificationManager::class.java)) as Boolean
+        } catch (e: Exception) { false }
+    }
+
+    private fun liveUpdate(text: String, s: RunRecorder.Snapshot, open: PendingIntent, toggle: PendingIntent, paused: Boolean): Notification {
+        val nowE = android.os.SystemClock.elapsedRealtime()
+        val active = if (s.recording) s.activeMs(nowE) else 0L
+        val lap = io.github.sby1234ai.runmate.logic.Lap.of(s.stats, active)
+        val state = when {
+            !s.recording -> "준비 중"
+            s.manualPaused -> "일시정지"
+            s.autoPaused -> "자동 일시정지"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.RUN -> "뛰는 중"
+            s.motion == io.github.sby1234ai.runmate.logic.Motion.WALK -> "걷는 중"
+            else -> "멈춤"
+        }
+        val detail = buildList {
+            add("${Format.km(s.stats.distance)} km · 평균 ${Format.pace(s.stats.paceSecPerKm)}")
+            add("${lap.number}km째 ${Format.pace(lap.paceSecPerKm)}")
+            if (s.steps > 0) add(String.format(java.util.Locale.KOREA, "%,d걸음", s.steps))
+            s.cadence?.takeIf { it > 0 }?.let { add("분당 ${it}걸음") }
+        }.joinToString(" · ")
+        val n = NotificationCompat.Builder(this, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_run)
+            .setContentTitle("런메이트 · $state")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(detail))
+            .setColor(0xFF1FB3A2.toInt())                 // 칩·아이콘 강조색(초록 계열)
+            .setUsesChronometer(s.recording && !paused)     // 칩과 알림에 흐르는 운동 시간
+            .setWhen(System.currentTimeMillis() - active)
+            .setShowWhen(s.recording && !paused)
+            .setContentIntent(open)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .addAction(0, if (paused) "▶ 다시 시작" else "Ⅱ 일시정지", toggle)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .build()
+        return try {
+            val b = Notification.Builder.recoverBuilder(this, n)
+            Notification.Builder::class.java.getMethod("setRequestPromotedOngoing", Boolean::class.javaPrimitiveType).invoke(b, true)
+            // 칩에 보일 짧은 글(7자 미만이면 다 보임): 멈추면 "일시정지", 달리면 거리
+            Notification.Builder::class.java.getMethod("setShortCriticalText", String::class.java)
+                .invoke(b, if (paused) "일시정지" else "${Format.km(s.stats.distance)}km")
+            b.build()
+        } catch (e: Exception) { n }
     }
 
     /** 알림 카드 내용. 시간은 Chronometer라 앱이 고치지 않아도 잠금 화면에서 1초마다 흐릅니다(멈춤이면 멈춤). */
