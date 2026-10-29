@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
+    <!-- 날씨 사진(res/drawable-nodpi/bg_*.jpg 이 있으면 씀). 없으면 SkyView가 그라데이션 하늘을 그립니다 -->
+    <ImageView android:id="@+id/bgPhoto" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:scaleType="centerCrop" android:importantForAccessibility="no" android:visibility="gone" />
+
     <io.github.sby1234ai.runmate.ui.SkyView android:id="@+id/sky"
         android:layout_width="match_parent" android:layout_height="match_parent" />
 
@@ -15,7 +19,8 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical">
                 <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                    android:text="@string/app_name" android:textSize="22sp" android:textStyle="bold" android:textColor="#FFFFFFFF" />
+                    android:text="@string/app_name" android:textSize="22sp" android:textStyle="bold" android:textColor="#FFFFFFFF"
+                android:shadowColor="#40000000" android:shadowRadius="6" />
                 <ImageButton android:id="@+id/btnSettings"
                     android:layout_width="44dp" android:layout_height="44dp"
                     android:background="@drawable/bg_icon_button" android:src="@drawable/ic_settings"
@@ -27,7 +32,7 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
                 <TextView android:id="@+id/temp" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="--°" android:textSize="72sp" android:textColor="#FFFFFFFF"
+                    android:text="--°" android:textSize="64sp" android:textColor="#FFFFFFFF"
                     android:fontFamily="sans-serif-light" android:includeFontPadding="false" android:fontFeatureSettings="tnum" />
                 <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
                     android:orientation="vertical" android:layout_marginStart="14dp">
@@ -38,26 +43,26 @@
                 </LinearLayout>
             </LinearLayout>
             <TextView android:id="@+id/weatherTip" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:background="@drawable/bg_chip_glass"
+                android:layout_marginTop="12dp" android:background="@drawable/bg_chip_dark"
                 android:paddingHorizontal="14dp" android:paddingVertical="7dp"
                 android:textSize="14sp" android:textColor="#FFFFFFFF" />
 
             <!-- 시작 버튼 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStart"
-                android:layout_width="164dp" android:layout_height="164dp"
-                android:layout_gravity="center_horizontal" android:layout_marginTop="34dp"
+                android:layout_width="132dp" android:layout_height="132dp"
+                android:layout_gravity="center_horizontal" android:layout_marginTop="30dp"
                 android:insetTop="0dp" android:insetBottom="0dp" android:insetLeft="0dp" android:insetRight="0dp"
-                android:text="시작" android:textSize="30sp" android:textStyle="bold" android:textColor="@color/ink"
-                app:icon="@drawable/ic_play" app:iconGravity="textStart" app:iconSize="30dp" app:iconTint="@color/run"
-                app:cornerRadius="82dp" app:backgroundTint="#FFFFFFFF" android:elevation="10dp"
-                app:strokeColor="#59FFFFFF" app:strokeWidth="10dp" />
+                android:text="시작" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/ink"
+                app:icon="@drawable/ic_play" app:iconGravity="textStart" app:iconSize="24dp" app:iconPadding="6dp" app:iconTint="@color/run"
+                app:cornerRadius="66dp" app:backgroundTint="#EBFFFFFF" android:elevation="12dp"
+                app:strokeColor="#80FFFFFF" app:strokeWidth="1dp" />
             <TextView android:id="@+id/weekLine" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" android:layout_marginTop="14dp"
                 android:textSize="14sp" android:textColor="#F2FFFFFF" android:fontFeatureSettings="tnum" />
 
             <GridLayout android:id="@+id/tiles" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="26dp" android:columnCount="2" android:useDefaultMargins="false" />
+                android:layout_marginTop="22dp" android:layout_marginHorizontal="-6dp" android:columnCount="2" android:useDefaultMargins="false" />
 
             <LinearLayout android:id="@+id/setupCard"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -100,7 +105,7 @@
             </LinearLayout>
 
             <io.github.sby1234ai.runmate.ui.RunnerView android:id="@+id/runner"
-                android:layout_width="190dp" android:layout_height="190dp" android:layout_marginTop="16dp" />
+                android:layout_width="150dp" android:layout_height="150dp" android:layout_marginTop="12dp" />
 
             <TextView android:id="@+id/time" style="@style/Num"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"

@@ -20,6 +20,9 @@ import kotlin.random.Random
 class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = null) : View(ctx, attrs) {
     var sky: Sky = Sky.PARTLY; private set
     var night: Boolean = false; private set
+    /** 뒤에 날씨 사진이 깔려 있으면 하늘 대신 글자가 잘 보이게 위·아래만 어둡게 누르고, 비·눈 입자만 그립니다. */
+    var photo: Boolean = false
+        set(v) { if (field != v) { field = v; shaderKey = ""; invalidate() } }
     /** 달리는 중 화면처럼 글자가 많은 곳에서는 배경을 어둡게 눌러 줍니다. */
     var dim: Boolean = false
         set(v) { field = v; invalidate() }
@@ -71,18 +74,20 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
         super.onDraw(canvas)
         val w = width.toFloat(); val h = height.toFloat()
         if (w <= 0 || h <= 0) return
-        val key = "$sky$night$width$height"
+        val key = "$sky$night$photo$width$height"
         if (key != shaderKey) {
-            bg.shader = LinearGradient(0f, 0f, 0f, h, colors(), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
+            bg.shader = if (photo)
+                LinearGradient(0f, 0f, 0f, h, intArrayOf(0x8C000000.toInt(), 0x26000000, 0x1A000000, 0xA6000000.toInt()), floatArrayOf(0f, 0.32f, 0.55f, 1f), Shader.TileMode.CLAMP)
+            else LinearGradient(0f, 0f, 0f, h, colors(), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
             shaderKey = key
         }
         canvas.drawRect(0f, 0f, w, h, bg)
         val t = SystemClock.uptimeMillis() / 1000f
 
         // 달리는 중(dim)에는 숫자가 잘 보이게 해·달·구름은 빼고 별·비·눈만 남깁니다
-        if (night) drawStars(canvas, w, h, t, moon = !dim)
-        else if (!dim && (sky == Sky.CLEAR || sky == Sky.PARTLY)) drawSun(canvas, w, h, t)
-        val clouds = !dim
+        if (night && !photo) drawStars(canvas, w, h, t, moon = !dim)
+        else if (!dim && !photo && (sky == Sky.CLEAR || sky == Sky.PARTLY)) drawSun(canvas, w, h, t)
+        val clouds = !dim && !photo
         when (sky) {
             Sky.PARTLY -> if (clouds) drawClouds(canvas, w, h, t, 2, 0.55f)
             Sky.CLOUDY, Sky.FOG -> if (clouds) drawClouds(canvas, w, h, t, 4, 0.42f)
@@ -91,7 +96,7 @@ class SkyView @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = nul
             Sky.SNOW -> { if (clouds) drawClouds(canvas, w, h, t, 3, 0.30f); drawSnow(canvas, w, h, t) }
             else -> {}
         }
-        if (sky == Sky.FOG) { p.shader = null; p.color = 0x40FFFFFF; canvas.drawRect(0f, h * 0.45f, w, h, p) }
+        if (sky == Sky.FOG && !photo) { p.shader = null; p.color = 0x40FFFFFF; canvas.drawRect(0f, h * 0.45f, w, h, p) }
         if (dim) { p.shader = null; p.color = 0x59000000; canvas.drawRect(0f, 0f, w, h, p) }
 
         if (isShown) postInvalidateDelayed(50)

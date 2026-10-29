@@ -56,6 +56,10 @@ class MainActivity : AppCompatActivity() {
     private val ticker = Handler(Looper.getMainLooper())
     private var openedSavedId: Long? = null
     private var demoWeather: WeatherNow? = null
+    private var currentSky = Sky.PARTLY
+    private var currentNight = false
+    private var darkTiles = false
+    private var running = false
 
     private val listener = RunRecorder.Listener { render(it) }
 
@@ -161,10 +165,12 @@ class MainActivity : AppCompatActivity() {
     private fun applyWeather(w: WeatherNow?, label: String? = null, meta: String? = null) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val night = w?.let { !it.isDay } ?: (hour < 6 || hour >= 19)
-        sky.setWeather(w?.sky ?: Sky.PARTLY, night)
-        val (top, bottom) = sky.edgeColors()
-        window.statusBarColor = top
-        window.navigationBarColor = bottom
+        val skyNow = w?.sky ?: Sky.PARTLY
+        sky.setWeather(skyNow, night)
+        currentSky = skyNow; currentNight = night
+        applyBackground()
+        darkTiles = sky.photo || night || skyNow == Sky.RAIN || skyNow == Sky.STORM
+        styleTiles()
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = false
             isAppearanceLightNavigationBars = false
@@ -190,6 +196,45 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.weatherMeta).text = "${feels}바람 ${"%.1f".format(w.windMs)}m/s"
             tip.text = Weather.tip(w)
             findViewById<TextView>(R.id.credit).text = "날씨 정보: Open-Meteo.com (CC BY 4.0)"
+        }
+    }
+
+    /**
+     * 날씨(와 달리는 중인지)에 맞는 사진이 앱에 들어 있으면 사진을, 없으면 그라데이션 하늘을 씁니다.
+     * 사진 이름: bg_clear, bg_cloudy, bg_rain, bg_snow, bg_night, bg_run_day, bg_run_night (res/drawable-nodpi)
+     */
+    private fun applyBackground() {
+        val base = when {
+            running -> if (currentNight) "bg_run_night" else "bg_run_day"
+            currentNight -> "bg_night"
+            else -> when (currentSky) {
+                Sky.CLEAR, Sky.PARTLY -> "bg_clear"
+                Sky.CLOUDY, Sky.FOG -> "bg_cloudy"
+                Sky.RAIN, Sky.STORM -> "bg_rain"
+                Sky.SNOW -> "bg_snow"
+            }
+        }
+        val photoView = findViewById<ImageView>(R.id.bgPhoto)
+        @Suppress("DiscouragedApi")
+        val id = resources.getIdentifier(base, "drawable", packageName)
+        if (id != 0) {
+            photoView.setImageResource(id); photoView.visibility = View.VISIBLE; sky.photo = true
+        } else {
+            photoView.setImageDrawable(null); photoView.visibility = View.GONE; sky.photo = false
+        }
+        val (top, bottom) = if (sky.photo) 0xFF111111.toInt() to 0xFF111111.toInt() else sky.edgeColors()
+        window.statusBarColor = top
+        window.navigationBarColor = bottom
+    }
+
+    /** 어두운 배경(비·밤·사진)에서는 어두운 반투명 카드에 흰 글자, 밝은 배경에서는 흰 카드에 짙은 글자 */
+    private fun styleTiles() {
+        val grid = findViewById<GridLayout>(R.id.tiles)
+        for (i in 0 until grid.childCount) {
+            val v = grid.getChildAt(i)
+            v.setBackgroundResource(if (darkTiles) R.drawable.bg_tile_dark else R.drawable.bg_tile)
+            v.findViewById<TextView>(R.id.title).setTextColor(if (darkTiles) 0xFFFFFFFF.toInt() else ContextCompat.getColor(this, R.color.ink))
+            v.findViewById<TextView>(R.id.sub).setTextColor(if (darkTiles) 0xB3FFFFFF.toInt() else ContextCompat.getColor(this, R.color.sub))
         }
     }
 
@@ -233,6 +278,7 @@ class MainActivity : AppCompatActivity() {
             grid.addView(v, lp)
             v
         }
+        styleTiles()
         // 기록 요약은 파일을 읽어야 하므로 뒤에서 계산합니다
         Thread {
             val runs = RunStore.ids(this).mapNotNull { RunStore.load(this, it) }
@@ -294,6 +340,7 @@ class MainActivity : AppCompatActivity() {
         home.visibility = if (s.recording) View.GONE else View.VISIBLE
         runPanel.visibility = if (s.recording) View.VISIBLE else View.GONE
         sky.dim = s.recording
+        if (running != s.recording) { running = s.recording; applyBackground() }
 
         val paused = s.recording && s.paused && Prefs.autoPause(this)
         val (label, color, tint) = when {
