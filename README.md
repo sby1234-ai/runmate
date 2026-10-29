@@ -26,7 +26,7 @@
 ## 만드는 방법
 
 - `main`에 올리면 GitHub Actions가 단위 테스트를 돌리고 APK를 만듭니다(`.github/workflows/build.yml`).
-- `v`로 시작하는 태그를 올리면 서명된 APK와 SHA-256 값을 Releases에 올립니다.
+- `app/build.gradle.kts`의 `versionName`을 올려 `main`에 반영하면, 그 버전의 서명된 APK와 SHA-256 값을 Releases에 자동으로 올립니다.
 - 직접 빌드: Android Studio로 열거나, JDK 17과 Gradle 8.7 이상에서 `gradle testDebugUnitTest assembleDebug`.
 
 ## 구조
