@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sby1234ai.runmate.logic.MotionClassifierTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-08T13:58:16" hostname="runnervmwuk1x" time="0.032">
+  <properties/>
+  <testcase name="동작_인식이_걷기여도_분명히_빠르면_뛰기" classname="io.github.sby1234ai.runmate.logic.MotionClassifierTest" time="0.009"/>
+  <testcase name="튀는_GPS_속도는_무시한다" classname="io.github.sby1234ai.runmate.logic.MotionClassifierTest" time="0.004"/>
+  <testcase name="동작_인식을_먼저_쓰되_오래되면_속도로_돌아간다" classname="io.github.sby1234ai.runmate.logic.MotionClassifierTest" time="0.0"/>
+  <testcase name="속도만으로_걷기와_뛰기를_나눈다" classname="io.github.sby1234ai.runmate.logic.MotionClassifierTest" time="0.009"/>
+  <testcase name="경계_근처에서는_왔다갔다_하지_않는다" classname="io.github.sby1234ai.runmate.logic.MotionClassifierTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
