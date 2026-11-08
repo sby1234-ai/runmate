@@ -29,8 +29,10 @@
 | 릴리스 | `app/build.gradle.kts`의 `versionName`을 올려 main에 푸시하면 그 버전 릴리스가 자동 생성(태그 푸시는 막혀 있음). 서명 키는 GitHub Secrets에만 있음 |
 | 웹 화면 | `web/` 폴더가 바뀌면 `.github/workflows/pages.yml`이 GitHub Pages로 배포 |
 
-## 지금 상태 (2026-10-30 06:50)
+## 지금 상태 (2026-11-08 22:55)
 
+- 2026-11-08 웹 화면(`web/`)·README를 v0.5 기준으로 갱신: `ci-screens`(v0.5.0 커밋 843f26b) 캡처 12장을 `web/img/`에 넣음(home·runs·weather(비·눈·밤 3장 합본)·run·walk·autopause·lock·detail·heart·share·settings·update), 준비 화면·기록 탭·헬스 커넥트·워치 소개 문장 추가(워치는 「첫 버전」), 하단 「만든 사람」 링크를 myprofile 메인으로. 앱 코드·버전은 그대로(v0.5.1)
+- 사용자는 아직 실사용 전 — 실제 기록·준비 화면·워치 캡처가 생기면 `web/img/` 사진 교체
 - 배포: **v0.5.1** (versionCode 29) — 워치 실시간 심박(헬스 서비스 MeasureClient, 처음 「시작」 때 BODY_SENSORS 권한 요청 → 기록 중 5초마다 /runmate/hr → 휴대폰 `filesDir/watch_hr.txt` 저장 → 상세 화면 심박 카드가 이것을 먼저, 없으면 헬스 커넥트)
 - v0.5.0 (28) — 워치 앱 첫 버전(시간·거리·걷기/뛰기 표시, 시작/일시정지·계속/종료(길게)), 릴리스에 runmate-wear-vX.apk
 - 이전 **v0.4.0** (versionCode 27) — 헬스 커넥트: 기록 상세 「심박 (워치)」 카드(평균·최고·1km 구간 평균·그래프, 권한 없으면 가져오기 버튼), 기록 화면 「⌚ 워치로 뛴 기록 가져오기」(최근 30일 경로 있는 달리기·걷기, 걷기/뛰기는 속도 2.2 m/s 기준)
