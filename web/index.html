@@ -12,7 +12,7 @@
 <body>
 <div class="page">
   <header class="top">
-    <h1>런메이트<span class="ver">v0.3</span></h1>
+    <h1>런메이트<span class="ver">v0.5</span></h1>
     <p class="lead">뛰거나 걸으면 경로와 거리를 기록하고, <span class="run-t">뛰기</span>와 <span class="walk-t">걷기</span>를 자동으로 나눠 보여 주는 안드로이드 러닝 앱입니다.</p>
     <div class="cta">
       <a class="btn" href="https://github.com/sby1234-ai/runmate/releases/latest">안드로이드 앱 받기</a>
@@ -58,27 +58,45 @@
 
   <section class="how" aria-labelledby="how-h">
     <h2 id="how-h">앱에서는 이렇게 씁니다</h2>
+    <h3>시작과 첫 화면</h3>
     <div class="shots">
-      <figure><img src="img/home.jpg" alt="첫 화면: 지금 날씨에 맞춘 어두운 배경과 이번 주 거리, 시작 버튼" loading="lazy" width="540" height="1200"><figcaption>첫 화면 — 날씨에 따라 바뀌는 배경</figcaption></figure>
-      <figure><img src="img/run.jpg" alt="달리는 중 화면: 운동 시간, 거리, 페이스와 움직이는 러너" loading="lazy" width="540" height="1200"><figcaption>달리는 중 — 시간·거리·페이스</figcaption></figure>
-      <figure><img src="img/detail.jpg" alt="기록 보기: 어두운 지도 위 뛰기·걷기 색으로 나뉜 경로와 기록 숫자" loading="lazy" width="540" height="1200"><figcaption>기록 보기 — 지도와 1km 구간</figcaption></figure>
-      <figure><img src="img/share.jpg" alt="공유 이미지: 거리, 길 모양, 시간·평균 페이스·뛴 비율" loading="lazy" width="540" height="675"><figcaption>공유 이미지 — 지도 없이 길 모양만</figcaption></figure>
+      <figure><img src="img/home.jpg" alt="첫 화면: 날씨에 맞춘 사진 배경 위 유리 카드, 기록 요약, 음성 안내·자동 일시정지 토글, 달리기 시작 버튼" loading="lazy" width="540" height="1200"><figcaption>첫 화면 — 날씨·기록 요약·달리기 시작</figcaption></figure>
+      <figure><img src="img/runs.jpg" alt="기록 화면: 모든 기록·최고 기록 탭, 이번 주·이번 달 거리, 워치로 뛴 기록 가져오기 버튼" loading="lazy" width="540" height="1200"><figcaption>기록 — 모든 기록 / 최고 기록 탭</figcaption></figure>
+      <figure class="wide"><img src="img/weather.jpg" alt="비·눈·밤일 때의 첫 화면 배경과 날씨 안내 문구" loading="lazy" width="1096" height="800"><figcaption>날씨에 따라 바뀌는 배경 — 비·눈·밤</figcaption></figure>
     </div>
-    <p class="drop-note">화면은 에뮬레이터에서 예시 기록으로 찍은 것입니다.</p>
+
+    <h3>달리는 중</h3>
+    <div class="shots">
+      <figure><img src="img/run.jpg" alt="달리는 중 화면: 운동 시간, 거리, 평균 페이스, 뛴 거리·걸은 거리, 구간 페이스" loading="lazy" width="540" height="1200"><figcaption>뛰는 중 — 시간·거리·페이스</figcaption></figure>
+      <figure><img src="img/walk.jpg" alt="걷는 중 화면: 걷기 표시와 걷는 러너, 운동 시간·거리" loading="lazy" width="540" height="1200"><figcaption>걷는 중 — 걷기·뛰기 자동 구분</figcaption></figure>
+      <figure><img src="img/autopause.jpg" alt="자동 일시정지 화면: 멈춰 서면 운동 시간이 멈춤" loading="lazy" width="540" height="1200"><figcaption>자동 일시정지 — 멈추면 시간도 멈춤</figcaption></figure>
+      <figure><img src="img/lock.jpg" alt="잠금 화면 알림 카드: 운동 시간, 거리, 몇 km째와 걷기·뛰기 상태" loading="lazy" width="540" height="1200"><figcaption>잠금 화면 — 알림 카드로 확인</figcaption></figure>
+    </div>
+
+    <h3>끝난 뒤</h3>
+    <div class="shots">
+      <figure><img src="img/detail.jpg" alt="기록 상세: 어두운 지도 위 뛰기·걷기 색으로 나뉜 경로와 기록 숫자" loading="lazy" width="540" height="1200"><figcaption>기록 상세 — 지도와 기록 숫자</figcaption></figure>
+      <figure><img src="img/heart.jpg" alt="기록 상세 아래쪽: 심박(워치) 카드와 1km 구간 막대" loading="lazy" width="540" height="1200"><figcaption>심박(워치) 카드와 1km 구간</figcaption></figure>
+      <figure><img src="img/share.jpg" alt="공유 이미지: 거리, 길 모양, 시간·평균 페이스·뛴 비율" loading="lazy" width="540" height="675"><figcaption>공유 이미지 — 지도 없이 길 모양만</figcaption></figure>
+      <figure><img src="img/settings.jpg" alt="설정 화면: 지도 보기, 날씨 배경, 음성 안내, 자동 일시정지 켜고 끄기" loading="lazy" width="540" height="1200"><figcaption>설정 — 기능마다 켜고 끄기</figcaption></figure>
+      <figure><img src="img/update.jpg" alt="새 버전 안내 대화상자: 바뀐 점과 설치 방법, 업데이트 버튼" loading="lazy" width="540" height="1200"><figcaption>자동 업데이트 — 새 버전 안내</figcaption></figure>
+    </div>
+    <p class="drop-note">화면은 에뮬레이터에서 예시 기록으로 찍은 것입니다(v0.5.0 기준).</p>
     <ol class="steps">
-      <li><b>시작</b>을 누르고 휴대폰을 주머니에 넣습니다. 화면이 꺼지거나 잠겨도 기록이 이어지고, 휴대폰이 앱을 강제로 꺼도 앱을 다시 열면 그 자리부터 이어서 기록합니다.</li>
+      <li><b>달리기 시작</b>을 누르면 준비 화면에서 자유 달리기나 「1분 뛰기 / 2분 걷기 × 6」 같은 <b>인터벌 코칭</b>을 고르고, 3·2·1 뒤에 기록이 시작됩니다. 음성 안내와 자동 일시정지는 첫 화면의 두 칸으로 켜고 끕니다.</li>
+      <li>휴대폰을 주머니에 넣으면 됩니다. 화면이 꺼지거나 잠겨도 기록이 이어지고, 휴대폰이 앱을 강제로 꺼도 앱을 다시 열면 그 자리부터 이어서 기록합니다.</li>
       <li>걷다가 뛰면 휴대폰 동작 인식과 걸음 센서(분당 140걸음 이상), GPS 속도로 <b>걷기·뛰기가 자동으로 바뀝니다.</b> 걸음 수와 케이던스도 함께 기록합니다.</li>
       <li>알림 카드에서 <b>흐르는 운동 시간, 거리, 몇 km째</b>를 보고, 「일시정지/계속」·「종료」 버튼으로 앱을 열지 않고 조작합니다. 1km마다 <b>음성</b>으로 거리와 시간을 알려 주고, 신호등 앞에서 멈추면 <b>자동 일시정지</b>합니다.</li>
-      <li>처음이라면 「1분 뛰기 / 2분 걷기 × 6」 같은 <b>인터벌 코칭</b>을 골라 뛰기와 걷기 차례를 음성으로 안내받을 수 있습니다.</li>
-      <li>끝나면 <b>정지를 길게</b> 누르거나 알림의 「종료」를 누릅니다. 기록 보기에서 지도, 1km 구간, 걸음 수, 이번 주 거리와 최고 기록을 보고, 이미지로 공유하거나 GPX로 내보낼 수 있습니다.</li>
+      <li>끝나면 <b>정지를 길게</b> 누르거나 알림의 「종료」를 누릅니다. 기록 상세에서 지도, 1km 구간, 걸음 수를 보고, 기록 화면의 「모든 기록 / 최고 기록」 탭에서 이번 주·이번 달 거리와 최고 기록을 봅니다. 이미지로 공유하거나 GPX로 내보낼 수도 있습니다.</li>
+      <li><b>워치·심박</b>: 헬스 커넥트에 워치 심박이 있으면 기록 상세의 「심박(워치)」 카드에 평균·최고·그래프·1km 구간 심박을 붙이고, 워치로만 뛴 기록도 「워치로 뛴 기록 가져오기」로 옮겨 옵니다. 웨어 OS 3 이상 워치용 앱(첫 버전)에서는 시간·거리·실시간 심박을 보고 워치 버튼으로 시작·일시정지·종료합니다.</li>
       <li>새 버전이 나오면 앱이 알려 주고, 받은 파일이 진짜인지(SHA-256) 확인한 뒤 설치 화면을 엽니다.</li>
     </ol>
-    <p class="privacy">기록은 휴대폰 안에만 저장되고 인터넷으로 보내지 않습니다. 인터넷은 지도 그림(OpenStreetMap), 날씨(약 10km 단위로 줄인 위치만 Open-Meteo에 보냄), 업데이트 확인(GitHub)에만 쓰며, 설정에서 각각 끌 수 있습니다.</p>
+    <p class="privacy">기록은 휴대폰 안에만 저장되고 인터넷으로 보내지 않습니다. 인터넷은 지도 그림(OpenStreetMap), 날씨(약 10km 단위로 줄인 위치만 Open-Meteo에 보냄), 업데이트 확인(GitHub)에만 쓰며, 설정에서 각각 끌 수 있습니다. 헬스 커넥트 심박도 휴대폰 안에서만 읽습니다.</p>
   </section>
 
   <footer class="foot">
     <p>소스와 설치 파일: <a href="https://github.com/sby1234-ai/runmate">github.com/sby1234-ai/runmate</a></p>
-    <p>만든 사람: <a href="https://sby1234-ai.github.io/myprofile/career/">서보엽</a></p>
+    <p>만든 사람: <a href="https://sby1234-ai.github.io/myprofile/">서보엽</a></p>
   </footer>
 </div>
 <script src="logic.js" defer></script>

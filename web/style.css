@@ -65,5 +65,6 @@ h3 { margin: 26px 0 8px; font-size: 16px; color: var(--sub); }
 .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 0; }
 .shots figure { margin: 0; }
 .shots img { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid var(--line); }
+.shots figure.wide { grid-column: 1 / -1; }
 .shots figcaption { margin-top: 6px; font-size: 13px; color: var(--sub); text-align: center; }
 .ver { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px; background: var(--walk-tint); color: var(--walk); font-size: 13px; font-weight: 800; vertical-align: middle; letter-spacing: 0; }
